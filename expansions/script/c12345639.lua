@@ -1,5 +1,3 @@
--- Script for custom field spell that treats all monsters as Xyz monsters and assigns ranks
-
 local s,id=GetID()
 function s.initial_effect(c)
     -- Activate
@@ -28,6 +26,15 @@ function s.initial_effect(c)
     e3:SetTarget(s.xyztg)
     e3:SetValue(s.rankval)
     c:RegisterEffect(e3)
+
+    -- Increase rank of your Xyz monsters by 3 during each of your Standby Phases
+    local e4=Effect.CreateEffect(c)
+    e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
+    e4:SetCode(EVENT_PHASE+PHASE_STANDBY)
+    e4:SetRange(LOCATION_FZONE)
+    e4:SetCountLimit(1)
+    e4:SetOperation(s.rankupop)
+    c:RegisterEffect(e4)
 end
 
 function s.xyztg(e,c)
@@ -39,5 +46,19 @@ function s.rankval(e,c,rc)
         return 0
     else
         return c:GetLevel()
+    end
+end
+
+function s.rankupop(e,tp,eg,ep,ev,re,r,rp)
+    local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,0,nil,TYPE_XYZ)
+    local tc=g:GetFirst()
+    while tc do
+        local e1=Effect.CreateEffect(e:GetHandler())
+        e1:SetType(EFFECT_TYPE_SINGLE)
+        e1:SetCode(EFFECT_UPDATE_RANK)
+        e1:SetValue(3)
+        e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+        tc:RegisterEffect(e1)
+        tc=g:GetNext()
     end
 end
