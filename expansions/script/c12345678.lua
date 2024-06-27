@@ -273,7 +273,6 @@ end
 function s.rcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(id+ep)==0
 		and (r&REASON_COST)~=0 and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
-		and re:GetHandler():GetOverlayCount()>=ev-1
 end
 function s.repop(e,tp,eg,ep,ev,re,r,rp)
     Duel.PayLPCost(tp, 500)

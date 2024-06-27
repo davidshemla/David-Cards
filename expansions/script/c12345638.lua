@@ -18,17 +18,17 @@ function s.initial_effect(c)
     c:RegisterEffect(e2)
 
     --reflect effect damage
-	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetCode(EFFECT_REFLECT_DAMAGE)
-	e3:SetRange(LOCATION_FZONE)
-	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	e3:SetTargetRange(1,0)
-	e3:SetValue(s.refcon)
-	c:RegisterEffect(e3)
-	
-	--Redirect battle damage
-    local e4=Effect.CreateEffect(c)
+    local e3 = Effect.CreateEffect(c)
+    e3:SetType(EFFECT_TYPE_FIELD)
+    e3:SetCode(EFFECT_REFLECT_DAMAGE)
+    e3:SetRange(LOCATION_FZONE)
+    e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+    e3:SetTargetRange(1,0)
+    e3:SetValue(s.refcon)
+    c:RegisterEffect(e3)
+    
+    --Redirect battle damage
+    local e4 = Effect.CreateEffect(c)
     e4:SetType(EFFECT_TYPE_FIELD)
     e4:SetCode(EFFECT_REFLECT_BATTLE_DAMAGE)
     e4:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -36,8 +36,8 @@ function s.initial_effect(c)
     e4:SetTargetRange(1,0)
     e4:SetValue(1)
     c:RegisterEffect(e4)
-	
-    -- LP gain
+    
+    -- LP gain on summon
     local e5 = Effect.CreateEffect(c)
     e5:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
     e5:SetCode(EVENT_SUMMON_SUCCESS)
@@ -45,49 +45,53 @@ function s.initial_effect(c)
     e5:SetCondition(s.lpgcon)
     e5:SetOperation(s.lpop)
     c:RegisterEffect(e5)
-    local e6 = e5:Clone()
+
+    -- LP gain on special summon
+    local e6 = Effect.CreateEffect(c)
+    e6:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
     e6:SetCode(EVENT_SPSUMMON_SUCCESS)
+    e6:SetRange(LOCATION_FZONE)
+    e6:SetCondition(s.lpgcon)
+    e6:SetOperation(s.lpop)
     c:RegisterEffect(e6)
-    local e7 = e5:Clone()
-    e7:SetCode(EVENT_FLIP_SUMMON_SUCCESS)
-    c:RegisterEffect(e7)
 
     -- Negate and destroy
-    local e8 = Effect.CreateEffect(c)
-    e8:SetCategory(CATEGORY_NEGATE + CATEGORY_DESTROY)
-    e8:SetType(EFFECT_TYPE_QUICK_O)
-    e8:SetCode(EVENT_CHAINING)
-    e8:SetRange(LOCATION_FZONE)
-    e8:SetCountLimit(1)
-    e8:SetCondition(s.negcon)
-    e8:SetTarget(s.negtg)
-    e8:SetOperation(s.negop)
-    c:RegisterEffect(e8)
+    local e7 = Effect.CreateEffect(c)
+    e7:SetCategory(CATEGORY_NEGATE + CATEGORY_DESTROY)
+    e7:SetType(EFFECT_TYPE_QUICK_O)
+    e7:SetCode(EVENT_CHAINING)
+    e7:SetRange(LOCATION_FZONE)
+    e7:SetCountLimit(1)
+    e7:SetCondition(s.negcon)
+    e7:SetTarget(s.negtg)
+    e7:SetOperation(s.negop)
+    c:RegisterEffect(e7)
 
     -- Add Amazoness card from Deck/GY to hand
-    local e9 = Effect.CreateEffect(c)
-    e9:SetCategory(CATEGORY_TOHAND + CATEGORY_SEARCH)
-    e9:SetType(EFFECT_TYPE_IGNITION)
-    e9:SetRange(LOCATION_FZONE)
-    e9:SetCountLimit(1)
-    e9:SetTarget(s.thtg)
-    e9:SetOperation(s.thop)
-    c:RegisterEffect(e9)
+    local e8 = Effect.CreateEffect(c)
+    e8:SetCategory(CATEGORY_TOHAND + CATEGORY_SEARCH)
+    e8:SetType(EFFECT_TYPE_IGNITION)
+    e8:SetRange(LOCATION_FZONE)
+    e8:SetCountLimit(1)
+    e8:SetTarget(s.thtg)
+    e8:SetOperation(s.thop)
+    c:RegisterEffect(e8)
     
     -- Monsters your opponent controls must attack if able
-    local e10=Effect.CreateEffect(c)
-    e10:SetType(EFFECT_TYPE_FIELD)
-    e10:SetCode(EFFECT_MUST_ATTACK)
-    e10:SetRange(LOCATION_FZONE)
-    e10:SetTargetRange(0, LOCATION_MZONE)
-    c:RegisterEffect(e10)
+    local e9 = Effect.CreateEffect(c)
+    e9:SetType(EFFECT_TYPE_FIELD)
+    e9:SetCode(EFFECT_MUST_ATTACK)
+    e9:SetRange(LOCATION_FZONE)
+    e9:SetTargetRange(0, LOCATION_MZONE)
+    c:RegisterEffect(e9)
 end
-function s.refcon(e,re,val,r,rp,rc)
-	return (r&REASON_EFFECT)~=0 and rp==1-e:GetHandlerPlayer()
+
+function s.refcon(e, re, val, r, rp, rc)
+    return (r & REASON_EFFECT) ~= 0 and rp == 1 - e:GetHandlerPlayer()
 end
 
 function s.lpgcon(e, tp, eg, ep, ev, re, r, rp)
-    return ep == 1 - tp
+    return eg:IsExists(Card.IsControler, 1, nil, 1-tp)
 end
 
 function s.lpop(e, tp, eg, ep, ev, re, r, rp)
