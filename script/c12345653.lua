@@ -18,8 +18,8 @@ function s.initial_effect(c)
     c:RegisterEffect(e2)
     --Destroy monster with 0 ATK when it has a Venom Counter
     local e3=Effect.CreateEffect(c)
-    e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
-    e3:SetCode(EVENT_CUSTOM+id)
+    e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    e3:SetCode(EVENT_ADJUST)
     e3:SetRange(LOCATION_FZONE)
     e3:SetCondition(s.descon)
     e3:SetOperation(s.desop)
@@ -67,17 +67,14 @@ function s.acop(e,tp,eg,ep,ev,re,r,rp)
     for tc in aux.Next(tg) do
         if tc:IsCanAddCounter(0x1009,1) then
             tc:AddCounter(0x1009,1)
-            if tc:GetAttack()==0 then
-                Duel.RaiseEvent(tc,EVENT_CUSTOM+id,e,0,tp,0,0)
-            end
         end
     end
 end
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
-    return eg:IsExists(function(c) return c:GetAttack()==0 and c:GetCounter(0x1009)>0 end, 1, nil)
+    return Duel.IsExistingMatchingCard(function(c) return c:GetAttack()==0 and c:GetCounter(0x1009)>0 end, tp, LOCATION_MZONE, LOCATION_MZONE, 1, nil)
 end
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-    local g=eg:Filter(function(c) return c:GetAttack()==0 and c:GetCounter(0x1009)>0 end, nil)
+    local g=Duel.GetMatchingGroup(function(c) return c:GetAttack()==0 and c:GetCounter(0x1009)>0 end, tp, LOCATION_MZONE, LOCATION_MZONE, nil)
     Duel.Destroy(g,REASON_EFFECT)
 end
 function s.value(e,c)
