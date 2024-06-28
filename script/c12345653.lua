@@ -55,6 +55,19 @@ function s.initial_effect(c)
     e7:SetTarget(s.thtg)
     e7:SetOperation(s.thop)
     c:RegisterEffect(e7)
+    -- Place venom counters
+    local e8=Effect.CreateEffect(c)
+    e8:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    e8:SetCode(EVENT_SPSUMMON_SUCCESS)
+    e8:SetRange(LOCATION_FZONE)
+    e8:SetOperation(s.placeCounters)
+    c:RegisterEffect(e8)
+    local e9=e8:Clone()
+	e9:SetCode(EVENT_SUMMON_SUCCESS)
+	c:RegisterEffect(e9)
+	local e10=e9:Clone()
+	e10:SetCode(EVENT_FLIP_SUMMON_SUCCESS)
+	c:RegisterEffect(e10)
 end
 s.listed_series={0x50}
 s.counter_place_list={0x1009}
@@ -94,5 +107,15 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
     if #g>0 then
         Duel.SendtoHand(g,nil,REASON_EFFECT)
         Duel.ConfirmCards(1-tp,g)
+    end
+end
+function s.placeCounters(e,tp,eg,ep,ev,re,r,rp)
+    local tc=eg:GetFirst()
+    while tc do
+        if tc:IsType(TYPE_MONSTER) then
+            local count=tc:GetLevel()+tc:GetRank()+tc:GetLink()
+            tc:AddCounter(0x1009,count) -- Use the venom counter ID
+        end
+        tc = eg:GetNext()
     end
 end
