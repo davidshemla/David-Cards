@@ -20,7 +20,7 @@ function s.initial_effect(c)
     -- Negate opponent's monster effect permanently
     local e3 = Effect.CreateEffect(c)
     e3:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
-    e3:SetCode(EVENT_PRE_DAMAGE_CALCULATE)
+    e3:SetCode(EVENT_ATTACK_ANNOUNCE)
     e3:SetRange(LOCATION_SZONE)
     e3:SetOperation(s.negateEffect)
     c:RegisterEffect(e3)
