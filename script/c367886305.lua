@@ -22,7 +22,7 @@ function s.initial_effect(c)
 	e3:SetCondition(s.lvcon)
 	e3:SetOperation(s.lvop)
 	c:RegisterEffect(e3)
-	--destroy
+	--destroy (normal summon)
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,1))
 	e4:SetCategory(CATEGORY_DESTROY)
@@ -31,6 +31,10 @@ function s.initial_effect(c)
 	e4:SetTarget(s.destg)
 	e4:SetOperation(s.desop)
 	c:RegisterEffect(e4)
+	--destroy (special summon)
+	local e5=e4:Clone()
+	e5:SetCode(EVENT_SPSUMMON_SUCCESS)
+	c:RegisterEffect(e5)
 end
 s.listed_series={0x31}
 function s.value(e,c)
@@ -57,17 +61,19 @@ function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 		local ct=Duel.GetMatchingGroupCount(aux.FaceupFilter(Card.IsSetCard,0x31),tp,LOCATION_MZONE,0,nil)
 		local dt=Duel.GetMatchingGroupCount(s.filter,tp,0,LOCATION_ONFIELD,nil)
 		e:SetLabel(ct)
-		return dt>=ct
+		return dt>0
 	end
+	local ct=Duel.GetMatchingGroupCount(aux.FaceupFilter(Card.IsSetCard,0x31),tp,LOCATION_MZONE,0,nil)
 	local g=Duel.GetMatchingGroup(s.filter,tp,0,LOCATION_ONFIELD,nil)
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,e:GetLabel(),0,0)
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,ct,0,0)
 end
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=Duel.GetMatchingGroupCount(aux.FaceupFilter(Card.IsSetCard,0x31),tp,LOCATION_MZONE,0,nil)
 	local g=Duel.GetMatchingGroup(s.filter,tp,0,LOCATION_ONFIELD,nil)
-	if ct>#g then return end
+	if ct>#g then ct=#g end
+	if ct==0 then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
-	local sg=g:Select(tp,ct,ct,nil)
+	local sg=g:Select(tp,1,ct,nil)
 	Duel.HintSelection(sg)
 	Duel.Destroy(sg,REASON_EFFECT)
 end

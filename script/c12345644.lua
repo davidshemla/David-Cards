@@ -166,7 +166,7 @@ function s.initial_effect(c)
 	e26:SetCode(EFFECT_OVERLAY_REMOVE_REPLACE)
 	e26:SetRange(LOCATION_SZONE)
 	e26:SetCondition(s.rcon)
-	e26:SetOperation(s.rop)
+	e26:SetOperation(s.repop)
 	c:RegisterEffect(e26)
 	-- Infinite Normal Summon
     local e27=Effect.CreateEffect(c)
@@ -177,6 +177,15 @@ function s.initial_effect(c)
     e27:SetTargetRange(1,0)
     e27:SetValue(s.countlimit)
     c:RegisterEffect(e27)
+    -- Prevent using your monsters for Link Summon
+	local e28=Effect.CreateEffect(c)
+	e28:SetType(EFFECT_TYPE_FIELD)
+	e28:SetCode(EFFECT_CANNOT_BE_LINK_MATERIAL)
+	e28:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
+	e28:SetRange(LOCATION_SZONE)
+	e28:SetTargetRange(LOCATION_MZONE,0)
+	e28:SetValue(s.linklimit)
+	c:RegisterEffect(e28)
 end
 function s.efilter(e,te)
 	return te:GetOwner()~=e:GetOwner()
@@ -230,8 +239,18 @@ function s.exoperation(e, tp, eg, ep, ev, re, r, rp)
     Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_SPSUMMON)
     local tc = Duel.SelectMatchingCard(tp, s.exfilter, tp, LOCATION_EXTRA, 0, 1, 1, nil, e, tp):GetFirst()
     if tc then
-        Duel.SpecialSummon(tc, 0, tp, tp, true, false, POS_FACEUP)
-        tc:CompleteProcedure() -- This ensures the summon is treated as properly summon
+        if tc:IsType(TYPE_FUSION) then
+            Duel.SpecialSummon(tc, SUMMON_TYPE_FUSION, tp, tp, true, false, POS_FACEUP)
+        elseif tc:IsType(TYPE_SYNCHRO) then
+            Duel.SpecialSummon(tc, SUMMON_TYPE_SYNCHRO, tp, tp, true, false, POS_FACEUP)
+        elseif tc:IsType(TYPE_XYZ) then
+            Duel.SpecialSummon(tc, SUMMON_TYPE_XYZ, tp, tp, true, false, POS_FACEUP)
+        elseif tc:IsType(TYPE_LINK) then
+            Duel.SpecialSummon(tc, SUMMON_TYPE_LINK, tp, tp, true, false, POS_FACEUP)
+        else
+            Duel.SpecialSummon(tc, 0, tp, tp, true, false, POS_FACEUP)
+        end
+        tc:CompleteProcedure()
     end
 end
 function s.releaseTarget(e,c)
@@ -250,4 +269,9 @@ function s.repop(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.countlimit(e)
     return 99
+end
+
+function s.linklimit(e,c)
+    if not c then return false end
+    return c:IsControler(1-e:GetHandlerPlayer())
 end
