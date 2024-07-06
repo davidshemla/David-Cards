@@ -45,8 +45,19 @@ function s.initial_effect(c)
 	e4:SetTarget(s.distg)
 	e4:SetOperation(s.disop)
 	c:RegisterEffect(e4)
+	--add counter
+	local e5=Effect.CreateEffect(c)
+	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e5:SetRange(LOCATION_MZONE)
+	e5:SetCode(EVENT_ATTACK_DISABLED)
+	e5:SetOperation(s.ctop)
+	c:RegisterEffect(e5)
+	local e6=e5:Clone()
+	e6:SetCode(EVENT_CHAIN_NEGATED)
+	c:RegisterEffect(e6)
 end
 s.material_setcode={0x581}
+s.counter_place_list={0x581}
 function s.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
@@ -110,4 +121,7 @@ function s.disop(e,tp,eg,ep,ev,re,r,rp)
 		end
 		Duel.Damage(1-tp,1000,REASON_EFFECT)
 	end
+end
+function s.ctop(e,tp,eg,ep,ev,re,r,rp)
+	e:GetHandler():AddCounter(0x581,1)
 end

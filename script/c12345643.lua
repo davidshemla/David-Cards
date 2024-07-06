@@ -55,7 +55,6 @@ function s.initial_effect(c)
     e4:SetOperation(s.damageop)
     c:RegisterEffect(e4)
 end
-
 function s.spfilter(c,e,tp,zone)
     return c:IsDrone() and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,tp,zone)
 end

@@ -1,11 +1,11 @@
 -- Chimera Hydradrive Dragrid
 local s,id=GetID()
 function s.initial_effect(c)
-	c:EnableCounterPermit(0x577)
-	--link summon
-	Link.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsType,TYPE_LINK),5,5,s.lcheck)
-	c:EnableReviveLimit()
-	
+    c:EnableCounterPermit(0x577)
+    -- link summon
+    Link.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsType,TYPE_LINK),5,5,s.lcheck)
+    c:EnableReviveLimit()
+
     -- Effect 1: Place 1 Hydradrive Counter when Special Summoned from Extra Deck
     local e1 = Effect.CreateEffect(c)
     e1:SetDescription(aux.Stringid(id, 0))
@@ -35,10 +35,8 @@ end
 -- Listed Series
 s.listed_series = {0x577}
 
-s.roll_dice=true
-
 function s.lcheck(g,lc,sumtype,tp)
-	return g:CheckDifferentPropertyBinary(Card.GetAttribute,lc,sumtype,tp)
+    return g:CheckDifferentPropertyBinary(Card.GetAttribute,lc,sumtype,tp)
 end
 
 -- Function: Counter Placement Condition (Summoned from Extra Deck)
@@ -70,35 +68,22 @@ end
 
 -- Function: Special Summon Filter (Specify the conditions for the targeted monster)
 function s.spfilter(c, e, tp)
-    return c:IsSetCard(0x577) and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e, 0, tp, false, false)
+    return c:IsSetCard(0x577)
+    	and c:IsType(TYPE_MONSTER)
+        and c:IsCanBeSpecialSummoned(e, 0, tp, false, false) 
+        and c:IsType(TYPE_LINK) 
+        and c:GetLink() == 5
 end
 
 -- Function: Special Summon Operation (Perform the Special Summon)
 function s.spop(e, tp, eg, ep, ev, re, r, rp)
     local c = e:GetHandler()
-    local d = Duel.TossDice(tp, 1)
-    local att = ATTRIBUTE_UNKNOWN
-    if d == 1 then att = ATTRIBUTE_EARTH
-    elseif d == 2 then att = ATTRIBUTE_WATER
-    elseif d == 3 then att = ATTRIBUTE_FIRE
-    elseif d == 4 then att = ATTRIBUTE_WIND
-    elseif d == 5 then att = ATTRIBUTE_LIGHT
-    elseif d == 6 then att = ATTRIBUTE_DARK end
-    
     Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_SPSUMMON)
     local g = Duel.SelectMatchingCard(tp, s.spfilter, tp, LOCATION_EXTRA, 0, 1, 1, nil, e, tp)
     local tc = g:GetFirst()
     if tc then
         Duel.SendtoDeck(c, nil, SEQ_DECKSHUFFLE, REASON_EFFECT)
         Duel.BreakEffect()
-        if Duel.SpecialSummon(tc, 0, tp, tp, false, false, POS_FACEUP) ~= 0 then
-            local e1 = Effect.CreateEffect(c)
-            e1:SetType(EFFECT_TYPE_SINGLE)
-            e1:SetCode(EFFECT_CANNOT_TRIGGER)
-            e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
-            e1:SetReset(RESET_EVENT + RESETS_STANDARD + RESET_PHASE + PHASE_END)
-            tc:RegisterEffect(e1)
-            Duel.BreakEffect()
-        end
+        Duel.SpecialSummon(tc, 0, tp, tp, false, false, POS_FACEUP)
     end
 end

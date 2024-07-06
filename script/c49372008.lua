@@ -1,10 +1,13 @@
--- Chimera Hydradrive Draghead - Night
+-- Chimera Hydradrive Draghead - AI
 local s,id=GetID()
 
 function s.initial_effect(c)
+	--link summon
+	Link.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsType,TYPE_LINK),5,5,s.lcheck)
+	c:EnableReviveLimit()
 	-- Special Summon effect
     local e1=Effect.CreateEffect(c)
-    e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+    e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
     e1:SetCode(EVENT_SPSUMMON_SUCCESS)
     e1:SetCondition(s.spcon)
     e1:SetOperation(s.spop)
@@ -15,15 +18,18 @@ function s.initial_effect(c)
     e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
     e2:SetRange(LOCATION_MZONE)
     e2:SetCode(EVENT_PHASE+PHASE_END)
-    e2:SetCountLimit(1)
     e2:SetOperation(s.retop)
     c:RegisterEffect(e2)
 end
 s.listed_series={0x577}
 s.listed_names={49372007}
 
+function s.lcheck(g,lc,sumtype,tp)
+	return g:CheckDifferentPropertyBinary(Card.GetAttribute,lc,sumtype,tp)
+end
+
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-    return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
+    return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,nil)
 end
 
 function s.spop(e,tp,eg,ep,ev,re,r,rp)

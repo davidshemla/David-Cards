@@ -39,19 +39,17 @@ function s.initial_effect(c)
 	e4:SetCountLimit(1)
 	e4:SetValue(s.valcon)
 	c:RegisterEffect(e4)
-	--protection
+	--cannot be targeted or destroyed
 	local e5=Effect.CreateEffect(c)
-	e5:SetType(EFFECT_TYPE_FIELD)
+	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
-	e5:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
-	e5:SetRange(LOCATION_MZONE)
-	e5:SetTargetRange(LOCATION_MZONE,0)
-	e5:SetTarget(s.eftg)
+	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
+	e5:SetRange(LOCATION_ONFIELD)
 	e5:SetValue(aux.tgoval)
 	c:RegisterEffect(e5)
 	local e6=e5:Clone()
 	e6:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
-	e6:SetValue(s.efilter)
+	e6:SetValue(s.tgvalue)
 	c:RegisterEffect(e6)
 end
 s.listed_series={0x3013}
@@ -91,6 +89,6 @@ end
 function s.eftg(e,c)
 	return c:IsSetCard(0x3013)
 end
-function s.efilter(e,re)
-	return e:GetHandlerPlayer()~=re:GetOwnerPlayer()
+function s.tgvalue(e,re,rp)
+	return rp~=e:GetHandlerPlayer()
 end

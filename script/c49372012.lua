@@ -1,7 +1,10 @@
---Chimera Hydradrive Draghead - Grand
+--Chimera Hydradrive Draghead - Earth
 local s,id=GetID()
 
 function s.initial_effect(c)
+	--link summon
+	Link.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsType,TYPE_LINK),5,5,s.lcheck)
+	c:EnableReviveLimit()
     -- Special Summon effect
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -16,13 +19,16 @@ function s.initial_effect(c)
     e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
     e2:SetRange(LOCATION_MZONE)
     e2:SetCode(EVENT_PHASE+PHASE_END)
-    e2:SetCountLimit(1)
     e2:SetOperation(s.retop)
     c:RegisterEffect(e2)
 end
 
 s.listed_series={0x577}
 s.listed_names={49372007}
+
+function s.lcheck(g,lc,sumtype,tp)
+	return g:CheckDifferentPropertyBinary(Card.GetAttribute,lc,sumtype,tp)
+end
 
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return true end
@@ -34,7 +40,7 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
     local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
     local linkedCards = c:GetLinkedGroup()
     for tc in aux.Next(g) do
-        if not linkedCards:IsContains(tc) then
+        if not linkedCards:IsContains(tc) and tc~=c then
             local e1=Effect.CreateEffect(c)
             e1:SetType(EFFECT_TYPE_SINGLE)
             e1:SetCode(EFFECT_SET_ATTACK_FINAL)
