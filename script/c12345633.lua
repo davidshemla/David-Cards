@@ -26,17 +26,15 @@ function s.initial_effect(c)
     e3:SetValue(aux.tgoval) -- Cannot be targeted by card effects
     c:RegisterEffect(e3)
     
-    --special summon
+    --cannot target Timelord monsters
     local e4=Effect.CreateEffect(c)
-    e4:SetDescription(aux.Stringid(id,0))
-    e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
-    e4:SetType(EFFECT_TYPE_QUICK_O)
+    e4:SetType(EFFECT_TYPE_FIELD)
+    e4:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
+    e4:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
     e4:SetRange(LOCATION_SZONE)
-    e4:SetCode(EVENT_FREE_CHAIN)
-    e4:SetHintTiming(0,TIMING_END_PHASE)
-    e4:SetCondition(s.spcon)
-    e4:SetTarget(s.sptg)
-    e4:SetOperation(s.spop)
+    e4:SetTargetRange(LOCATION_MZONE,0)
+    e4:SetTarget(s.tgtg)
+    e4:SetValue(aux.tgoval)
     c:RegisterEffect(e4)
     
     --cannot trigger
@@ -58,16 +56,29 @@ function s.initial_effect(c)
     e6:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x4a))
     c:RegisterEffect(e6)
     
-    --sp summon sephylon
+    --special summon
     local e7=Effect.CreateEffect(c)
-    e7:SetDescription(aux.Stringid(id,1))
+    e7:SetDescription(aux.Stringid(id,0))
     e7:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e7:SetType(EFFECT_TYPE_QUICK_O)
-    e7:SetCode(EVENT_FREE_CHAIN)
     e7:SetRange(LOCATION_SZONE)
-    e7:SetTarget(s.sephtg)
-    e7:SetOperation(s.sephop)
+    e7:SetCode(EVENT_FREE_CHAIN)
+    e7:SetHintTiming(0,TIMING_END_PHASE)
+    e7:SetCondition(s.spcon)
+    e7:SetTarget(s.sptg)
+    e7:SetOperation(s.spop)
     c:RegisterEffect(e7)
+    
+    --sp summon sephylon
+    local e8=Effect.CreateEffect(c)
+    e8:SetDescription(aux.Stringid(id,1))
+    e8:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e8:SetType(EFFECT_TYPE_QUICK_O)
+    e8:SetCode(EVENT_FREE_CHAIN)
+    e8:SetRange(LOCATION_SZONE)
+    e8:SetTarget(s.sephtg)
+    e8:SetOperation(s.sephop)
+    c:RegisterEffect(e8)
     
     aux.GlobalCheck(s,function()
         s[0]=0
@@ -90,6 +101,22 @@ end
 s.listed_series={0x4a}
 s.listed_names={36894320,8967776}
 
+--e4
+function s.tgtg(e,c)
+    return c:IsSetCard(0x4a) and c:IsFaceup()
+end
+
+--e5
+function s.accon(e)
+    return Duel.GetTurnPlayer()==e:GetHandlerPlayer() and Duel.GetCurrentPhase()==PHASE_STANDBY
+end
+
+function s.aclimit(e,re,tp)
+    local rc=re:GetHandler()
+    return re:GetActivateLocation()==LOCATION_MZONE and rc:IsSetCard(0x4a) and not rc:IsImmuneToEffect(e)
+end
+
+--e7
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
     return not e:GetHandler():IsStatus(STATUS_CHAINING)
 end
@@ -114,15 +141,28 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
     end
 end
 
-function s.accon(e)
-    return Duel.GetTurnPlayer()==e:GetHandlerPlayer() and Duel.GetCurrentPhase()==PHASE_STANDBY
+--e8
+function s.filter(c,e,tp)
+    return c:IsCode(8967776) and c:IsCanBeSpecialSummoned(e,0,tp,true,false) 
+        and not c:IsHasEffect(EFFECT_NECRO_VALLEY)
 end
 
-function s.aclimit(e,re,tp)
-    local rc=re:GetHandler()
-    return re:GetActivateLocation()==LOCATION_MZONE and rc:IsSetCard(0x4a) and not rc:IsImmuneToEffect(e)
+function s.sephtg(e,tp,eg,ep,ev,re,r,rp,chk)
+    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 
+        and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp) end
+    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
 
+function s.sephop(e,tp,eg,ep,ev,re,r,rp)
+    if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+    local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
+    if #g>0 then
+        Duel.SpecialSummon(g,0,tp,tp,true,false,POS_FACEUP)
+    end
+end
+
+--ge1, ge2, ge3
 function s.cfilter(c,tp)
     return c:IsSetCard(0x4a) and c:IsFaceup() and c:IsSummonPlayer(tp)
 end
@@ -167,25 +207,5 @@ function s.checkop(e,tp,eg,ep,ev,re,r,rp)
             end
         end
         tc2=g2:GetNext() -- Fixed the variable name for the second loop
-    end
-end
-
-function s.filter(c,e,tp)
-    return c:IsCode(8967776) and c:IsCanBeSpecialSummoned(e,0,tp,true,false) 
-        and not c:IsHasEffect(EFFECT_NECRO_VALLEY)
-end
-
-function s.sephtg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 
-        and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp) end
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
-end
-
-function s.sephop(e,tp,eg,ep,ev,re,r,rp)
-    if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-    local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
-    if #g>0 then
-        Duel.SpecialSummon(g,0,tp,tp,true,false,POS_FACEUP)
     end
 end
