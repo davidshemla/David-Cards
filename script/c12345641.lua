@@ -83,6 +83,11 @@ function s.negateEffect(e, tp, eg, ep, ev, re, r, rp)
             e2:SetCode(EFFECT_DISABLE_EFFECT)
             e2:SetReset(RESET_EVENT + RESETS_STANDARD)
             bc:RegisterEffect(e2, true)
+            local e3 = Effect.CreateEffect(e:GetHandler())
+            e3:SetType(EFFECT_TYPE_SINGLE)
+            e3:SetCode(EFFECT_CANNOT_TRIGGER)
+            e3:SetReset(RESET_EVENT + RESETS_STANDARD)
+            bc:RegisterEffect(e3, true)
         end
     end
 end
@@ -93,7 +98,7 @@ function s.thcon(e, tp, eg, ep, ev, re, r, rp)
 end
 
 function s.thfilter(c)
-    return c:IsSetCard(0x34) and c:IsType(TYPE_SPELL + TYPE_TRAP) and c:IsAbleToHand()
+    return c:IsSetCard(0x34) and c:IsAbleToHand()
 end
 
 function s.amethystfilter(c)
@@ -112,10 +117,10 @@ function s.thop(e, tp, eg, ep, ev, re, r, rp)
     if #g > 0 then
         Duel.HintSelection(g)
         Duel.Destroy(g, REASON_EFFECT)
-        local bSearch = Duel.IsExistingMatchingCard(s.thfilter, tp, LOCATION_DECK, 0, 1, nil)
+        local bSearch = Duel.IsExistingMatchingCard(s.thfilter, tp, LOCATION_DECK+LOCATION_GRAVE, 0, 1, nil)
         if bSearch and Duel.SelectYesNo(tp, aux.Stringid(id, 0)) then
             Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_ATOHAND)
-            local sg = Duel.SelectMatchingCard(tp, s.thfilter, tp, LOCATION_DECK, 0, 1, 1, nil)
+            local sg = Duel.SelectMatchingCard(tp, s.thfilter, tp, LOCATION_DECK+LOCATION_GRAVE, 0, 1, 1, nil)
             if #sg > 0 then
                 Duel.SendtoHand(sg, nil, REASON_EFFECT)
                 Duel.ConfirmCards(1 - tp, sg)
