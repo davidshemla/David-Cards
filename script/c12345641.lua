@@ -85,9 +85,14 @@ function s.negateEffect(e, tp, eg, ep, ev, re, r, rp)
             bc:RegisterEffect(e2, true)
             local e3 = Effect.CreateEffect(e:GetHandler())
             e3:SetType(EFFECT_TYPE_SINGLE)
-            e3:SetCode(EFFECT_CANNOT_TRIGGER)
-            e3:SetReset(RESET_EVENT + RESETS_STANDARD)
+            e3:SetCode(EFFECT_DISABLE)
+            e3:SetReset(RESET_EVENT + RESETS_STANDARD_EXC_GRAVE)
             bc:RegisterEffect(e3, true)
+            local e4 = Effect.CreateEffect(e:GetHandler())
+            e4:SetType(EFFECT_TYPE_SINGLE)
+            e4:SetCode(EFFECT_DISABLE_EFFECT)
+            e4:SetReset(RESET_EVENT + RESETS_STANDARD_EXC_GRAVE)
+            bc:RegisterEffect(e4, true)
         end
     end
 end
