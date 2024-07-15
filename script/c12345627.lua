@@ -14,17 +14,17 @@ function s.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	c:RegisterEffect(e2)
-	--gain atk and return to hand
+	--gain atk and return to deck
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,0))
-	e3:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_TOHAND)
+	e3:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_TODECK)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetCode(EVENT_FREE_CHAIN)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCountLimit(1)
-	e3:SetTarget(s.atkthtg)
-	e3:SetOperation(s.atkthop)
+	e3:SetTarget(s.atktdtg)
+	e3:SetOperation(s.atktdop)
 	c:RegisterEffect(e3)
 end
 s.listed_series={0x3013}
@@ -37,15 +37,15 @@ end
 function s.atkthfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_SYNCHRO)
 end
-function s.atkthtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and s.atkthfilter(chkc) end
-	if chk==0 then return Duel.IsExistingTarget(s.atkthfilter,tp,0,LOCATION_MZONE,1,nil) end
+function s.atktdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and s.atktdfilter(chkc) end
+	if chk==0 then return Duel.IsExistingTarget(s.atktdfilter,tp,0,LOCATION_MZONE,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	local g=Duel.SelectTarget(tp,s.atkthfilter,tp,0,LOCATION_MZONE,1,1,nil)
+	local g=Duel.SelectTarget(tp,s.atktdfilter,tp,0,LOCATION_MZONE,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_ATKCHANGE,nil,0,tp,g:GetFirst():GetAttack())
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
-function s.atkthop(e,tp,eg,ep,ev,re,r,rp)
+function s.atktdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
@@ -60,7 +60,7 @@ function s.atkthop(e,tp,eg,ep,ev,re,r,rp)
 			c:RegisterEffect(e1)
 		end
 		if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-			Duel.SendtoHand(tc,nil,REASON_EFFECT)
+			Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 		end
 	end
 end
