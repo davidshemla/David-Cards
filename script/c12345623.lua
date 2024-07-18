@@ -6,7 +6,8 @@ function s.initial_effect(c)
     e0:SetType(EFFECT_TYPE_ACTIVATE)
     e0:SetCode(EVENT_FREE_CHAIN)
     c:RegisterEffect(e0)
-	--Add 1 "Flower Cardian" card from Deck or GY to hand
+	
+    -- Add 1 "Flower Cardian" card from Deck or GY to hand
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -16,7 +17,8 @@ function s.initial_effect(c)
 	e1:SetTarget(s.thtg)
 	e1:SetOperation(s.thop)
 	c:RegisterEffect(e1)
-	--Negate and destroy
+	
+    -- Negate and destroy
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -28,7 +30,8 @@ function s.initial_effect(c)
 	e2:SetTarget(s.negtg)
 	e2:SetOperation(s.negop)
 	c:RegisterEffect(e2)
-	--Place 1 "Flower Cardian" card on top of Deck
+	
+    -- Place 1 "Flower Cardian" card on top of Deck
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
 	e3:SetCategory(CATEGORY_TODECK)
@@ -49,6 +52,23 @@ function s.initial_effect(c)
 	e4:SetTarget(s.tdtg)
 	e4:SetOperation(s.tdop)
 	c:RegisterEffect(e4)
+	
+    -- All cards in hand and Deck are also treated as "Flower Cardian" monsters
+	local e5=Effect.CreateEffect(c)
+	e5:SetType(EFFECT_TYPE_FIELD)
+	e5:SetCode(EFFECT_ADD_SETCODE)
+	e5:SetRange(LOCATION_FZONE)
+	e5:SetTargetRange(LOCATION_HAND+LOCATION_DECK,0)
+	e5:SetValue(0xe6)
+	c:RegisterEffect(e5)
+	
+    local e6=Effect.CreateEffect(c)
+	e6:SetType(EFFECT_TYPE_FIELD)
+	e6:SetCode(EFFECT_ADD_TYPE)
+	e6:SetRange(LOCATION_FZONE)
+	e6:SetTargetRange(LOCATION_HAND+LOCATION_DECK,0)
+	e6:SetValue(TYPE_MONSTER)
+	c:RegisterEffect(e6)
 end
 s.listed_series={0xe6}
 
