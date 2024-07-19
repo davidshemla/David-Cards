@@ -122,6 +122,7 @@ function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=g:GetFirst()
 	if tc then
 		Duel.ShuffleDeck(tp)
+		Duel.SendtoDeck(tc,nil,2,REASON_EFFECT)
 		Duel.MoveSequence(tc,0)
 		Duel.ConfirmDecktop(tp,1)
 	end

@@ -139,12 +139,12 @@ function s.initial_effect(c)
 	e18:SetRange(LOCATION_SZONE)
 	e18:SetTargetRange(LOCATION_SZONE,0)
 	c:RegisterEffect(e18)
-	--inactivatable
+	-- effect cannot be negated
 	local e19=Effect.CreateEffect(c)
     e19:SetType(EFFECT_TYPE_FIELD)
     e19:SetCode(EFFECT_CANNOT_DISABLE)
     e19:SetRange(LOCATION_SZONE)
-    e19:SetTargetRange(LOCATION_ONFIELD,0)
+    e19:SetTargetRange(0xff,0)
     c:RegisterEffect(e19)
     --Summons cannot be negated
     local e20=Effect.CreateEffect(c)
