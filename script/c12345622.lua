@@ -26,8 +26,12 @@ function s.initial_effect(c)
 end
 s.listed_series={0x1034,0x2034,0x34}
 function s.tgtg(e,c)
-	return c:IsSetCard(0x34) or c:IsSetCard(0x1034) or (c:IsLocation(LOCATION_MZONE) and c:IsSetCard(0x2034))
+    return c:IsSetCard(0x34)
+    or c:IsSetCard(0x1034) 
+    or (c:IsLocation(LOCATION_MZONE) and c:IsSetCard(0x2034)) 
+    or c:IsType(TYPE_FIELD)
 end
+
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
 	Duel.Release(e:GetHandler(),REASON_COST)

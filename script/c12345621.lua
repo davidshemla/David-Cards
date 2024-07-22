@@ -12,18 +12,27 @@ function s.initial_effect(c)
 	e2:SetTarget(s.indtg)
 	e2:SetValue(s.indval)
 	c:RegisterEffect(e2)
-	--double
+	--piercing
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,0))
-	e3:SetType(EFFECT_TYPE_QUICK_O)
-	e3:SetCode(EVENT_PRE_DAMAGE_CALCULATE)
-	e3:SetRange(LOCATION_MZONE+LOCATION_HAND)
-	e3:SetCost(s.cost)
-	e3:SetTarget(s.target)
-	e3:SetOperation(s.operation)
+	e3:SetType(EFFECT_TYPE_FIELD)
+	e3:SetCode(EFFECT_PIERCE)
+	e3:SetRange(LOCATION_PZONE)
+	e3:SetTargetRange(LOCATION_MZONE,0)
+	e3:SetTarget(s.piercing_target)
 	c:RegisterEffect(e3)
+	--double
+	local e4=Effect.CreateEffect(c)
+	e4:SetDescription(aux.Stringid(id,0))
+	e4:SetType(EFFECT_TYPE_QUICK_O)
+	e4:SetCode(EVENT_PRE_DAMAGE_CALCULATE)
+	e4:SetRange(LOCATION_MZONE+LOCATION_HAND)
+	e4:SetCost(s.cost)
+	e4:SetTarget(s.target)
+	e4:SetOperation(s.operation)
+	c:RegisterEffect(e4)
 end
 s.listed_series={0x1034,0x2034,0x34}
+
 function s.indtg(e,c)
 	return c:IsSetCard(0x34) or c:IsSetCard(0x1034) or (c:IsLocation(LOCATION_MZONE) and c:IsSetCard(0x2034))
 end
@@ -71,4 +80,8 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToBattle() and c:IsFaceup() then
 		Duel.Destroy(c,REASON_EFFECT)
 	end
+end
+
+function s.piercing_target(e,c)
+	return c:IsSetCard(0x1034)
 end
