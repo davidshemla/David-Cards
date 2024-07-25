@@ -97,24 +97,14 @@ function s.copycon(e,tp,eg,ep,ev,re,r,rp)
 		and (not con or con(e,tp,eg,ep,ev,re,r,rp))
 end
 function s.copycost(e,tp,eg,ep,ev,re,r,rp,chk)
-	local c=e:GetHandler()
-	local tc=e:GetOwner()
-	local a=c:CheckRemoveOverlayCard(tp,1,REASON_COST)
-	local b=Duel.CheckLPCost(tp,400)
-	if chk==0 then return a or b end
-	Duel.Hint(HINT_CARD,0,tc:GetOriginalCode())
-	Duel.SetTargetCard(tc)
-	local op=Duel.SelectEffect(tp,{a,aux.Stringid(81330115,0)},{b,aux.Stringid(21454943,1)})
-	if op==0 then
-		Duel.SendtoGrave(tc,REASON_COST) 
-	else
-		Duel.PayLPCost(tp,400)
-	end
-	tc:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
+	if chk==0 then return Duel.CheckLPCost(tp,400) end
+	Duel.Hint(HINT_CARD,0,e:GetOwner():GetOriginalCode())
+	Duel.PayLPCost(tp,400)
+	e:GetOwner():RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 end
 function s.xyztg(e,c)
 	local no=c.xyz_number
-	return c:IsFaceup() and no and no>=101 and no<=107 and c:IsSetCard(0x1048)
+	return c:IsFaceup()
 end
 function s.xyzval(e,c,rc,tp)
 	return rc==e:GetOwner()

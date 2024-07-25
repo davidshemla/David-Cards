@@ -218,6 +218,10 @@ function s.initial_effect(c)
     c:RegisterEffect(e28)
 end
 
+function s.chainlimit(e,ep,tp)
+    return tp==ep
+end
+
 function s.efilter(e,te)
 	return te:GetOwner()~=e:GetOwner()
 end

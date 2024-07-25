@@ -45,6 +45,7 @@ function s.initial_effect(c)
     e6:SetCode(EFFECT_IMMUNE_EFFECT)
     e6:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
     e6:SetRange(LOCATION_FZONE)
+    e6:SetValue(s.eefilter)
     c:RegisterEffect(e6)
     
     -- Negate opponent's effects
@@ -64,28 +65,29 @@ function s.initial_effect(c)
     e8:SetType(EFFECT_TYPE_FIELD)
     e8:SetCode(EFFECT_LPCOST_CHANGE)
     e8:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-    e8:SetRange(LOCATION_SZONE)
+    e8:SetRange(LOCATION_FZONE)
     e8:SetTargetRange(1,0)
     e8:SetValue(s.costchange)
     c:RegisterEffect(e8)
-    
-    -- Pay LP instead of detaching for Xyz Monsters
-    local e9=Effect.CreateEffect(c)
-    e9:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
-    e9:SetCode(EFFECT_OVERLAY_REMOVE_REPLACE)
-    e9:SetRange(LOCATION_SZONE)
-    e9:SetCondition(s.rcon)
-    e9:SetOperation(s.repop)
-    c:RegisterEffect(e9)
 end
 
 function s.filter(c)
     return c:IsFaceup() and c:IsType(TYPE_XYZ)
 end
 
+function s.opponent_extra_deck_check(tp)
+    local g=Duel.GetFieldGroup(tp,LOCATION_EXTRA,LOCATION_EXTRA)
+    if #g>0 then
+        Duel.ConfirmCards(1-tp,g)
+        Duel.ShuffleDeck(tp)
+    end
+end
+
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.filter(chkc) end
-    if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,0,1,nil) and Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,0)>0 end
+    if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,0,1,nil) and Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,LOCATION_EXTRA)>0 end
+    -- Look at the opponent's Extra Deck before selecting a target
+    s.opponent_extra_deck_check(tp)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
     Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
@@ -94,7 +96,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
     local tc=Duel.GetFirstTarget()
     if not tc:IsRelateToEffect(e) or tc:IsFacedown() or not tc:IsType(TYPE_XYZ) then return end
     Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,8)) -- "Select cards from your Extra Deck to attach as material"
-    local g=Duel.SelectMatchingCard(tp,nil,tp,LOCATION_EXTRA,0,1,99,nil)
+    local g=Duel.SelectMatchingCard(tp,nil,tp,LOCATION_EXTRA,LOCATION_EXTRA,1,99,nil)
     if #g>0 then
         Duel.Overlay(tc,g)
     end
@@ -110,6 +112,10 @@ end
 
 function s.efilter(e,re)
     return e:GetHandlerPlayer()~=re:GetOwnerPlayer()
+end
+
+function s.eefilter(e,te)
+    return te:GetOwner()~=e:GetOwner()
 end
 
 function s.negfilter(c,tp)
@@ -140,13 +146,4 @@ function s.costchange(e,re,rp,val)
     else
         return val
     end
-end
-
-function s.rcon(e,tp,eg,ep,ev,re,r,rp)
-    return e:GetHandler():GetFlagEffect(id+ep)==0
-        and (r&REASON_COST)~=0 and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
-end
-
-function s.repop(e,tp,eg,ep,ev,re,r,rp)
-    Duel.PayLPCost(tp, 500)
 end
