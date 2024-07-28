@@ -216,10 +216,19 @@ function s.initial_effect(c)
     e28:SetTargetRange(1,0)
     e28:SetValue(s.countlimit)
     c:RegisterEffect(e28)
-end
-
-function s.chainlimit(e,ep,tp)
-    return tp==ep
+    --activation cannot be negated
+	local e29=Effect.CreateEffect(c)
+	e29:SetType(EFFECT_TYPE_FIELD)
+	e29:SetCode(EFFECT_CANNOT_INACTIVATE)
+	e29:SetRange(LOCATION_SZONE)
+	e29:SetValue(s.effectfilter)
+	c:RegisterEffect(e29)
+	local e30=Effect.CreateEffect(c)
+	e30:SetType(EFFECT_TYPE_FIELD)
+	e30:SetCode(EFFECT_CANNOT_DISEFFECT)
+	e30:SetRange(LOCATION_SZONE)
+	e30:SetValue(s.effectfilter)
+	c:RegisterEffect(e30)
 end
 
 function s.efilter(e,te)
@@ -321,4 +330,10 @@ end
 
 function s.countlimit(e)
     return 99
+end
+
+function s.effectfilter(e,ct)
+	local p=e:GetHandler():GetControler()
+	local te,tp,loc=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER,CHAININFO_TRIGGERING_LOCATION)
+	return p==tp and loc&LOCATION_ONFIELD+LOCATION_HAND+LOCATION_GRAVE+LOCATION_EXTRA+LOCATION_DECK+LOCATION_REMOVED+LOCATION_OVERLAY~=0
 end
