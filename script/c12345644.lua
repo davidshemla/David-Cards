@@ -192,19 +192,15 @@ function s.initial_effect(c)
 	e30:SetValue(s.effectfilter)
 	c:RegisterEffect(e30)
 end
+
 function s.efilter(e,te)
 	return te:GetOwner()~=e:GetOwner()
 end
+
 function s.eefilter(e,re)
 	return re:GetOwnerPlayer()~=e:GetHandlerPlayer()
 end
-function s.damval(e,re,val,r,rp,rc)
-	if r&REASON_EFFECT~=0 then return 0 end
-	return val
-end
-function s.condition(e)
-	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),LOCATION_MZONE,0)>=0
-end
+
 function s.costchange(e,re,rp,val)
 	if re and not mustpay then
 		return 0
@@ -212,6 +208,7 @@ function s.costchange(e,re,rp,val)
 		return val
 	end
 end
+
 function s.filter(c,e,sp)
 	return c:IsMonster() and c:IsCanBeSpecialSummoned(e,0,sp,true,false)
 end
@@ -233,13 +230,16 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:CompleteProcedure() -- Mark the summoned monster as properly summoned
 	end
 end
+
 function s.exfilter(c, e, tp)
     return c:IsMonster() and c:IsCanBeSpecialSummoned(e, 0, tp, true, false) and (c:IsLocation(LOCATION_EXTRA) and Duel.GetLocationCountFromEx(tp, tp, nil, c) > 0)
 end
+
 function s.extarget(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.exfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
+
 function s.exoperation(e, tp, eg, ep, ev, re, r, rp)
     Duel.Hint(HINT_SELECTMSG, tp, HINTMSG_SPSUMMON)
     local tc = Duel.SelectMatchingCard(tp, s.exfilter, tp, LOCATION_EXTRA, 0, 1, 1, nil, e, tp):GetFirst()
@@ -258,25 +258,35 @@ function s.exoperation(e, tp, eg, ep, ev, re, r, rp)
         tc:CompleteProcedure()
     end
 end
+
 function s.releaseTarget(e,c)
     return c:IsControler(e:GetHandlerPlayer())
 end
+
 function s.aclimit(e,re,tp)
     return re:IsHasCategory(CATEGORY_NEGATE)
-end
-function s.rcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():GetFlagEffect(id+ep)==0
-		and (r&REASON_COST)~=0 and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
-		and re:GetHandler():GetOverlayCount()>=ev-1
-end
-function s.repop(e,tp,eg,ep,ev,re,r,rp)
-    Duel.PayLPCost(tp, 500)
-end
-function s.countlimit(e)
-    return 99
 end
 
 function s.linklimit(e,c)
     if not c then return false end
     return c:IsControler(1-e:GetHandlerPlayer())
+end
+
+function s.rcon(e,tp,eg,ep,ev,re,r,rp)
+	return e:GetHandler():GetFlagEffect(id+ep)==0
+		and (r&REASON_COST)~=0 and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
+end
+
+function s.repop(e,tp,eg,ep,ev,re,r,rp)
+    Duel.PayLPCost(tp, 500)
+end
+
+function s.countlimit(e)
+    return 99
+end
+
+function s.effectfilter(e,ct)
+	local p=e:GetHandler():GetControler()
+	local te,tp,loc=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER,CHAININFO_TRIGGERING_LOCATION)
+	return p==tp and loc&LOCATION_ONFIELD+LOCATION_HAND+LOCATION_GRAVE+LOCATION_EXTRA+LOCATION_DECK+LOCATION_REMOVED+LOCATION_OVERLAY~=0
 end
