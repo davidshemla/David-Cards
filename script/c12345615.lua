@@ -78,32 +78,56 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e6:SetCondition(s.lpcon)
 	e6:SetOperation(s.lpop)
 	Duel.RegisterEffect(e6,tp)
+	--summon without tribute
+	local e7=Effect.CreateEffect(c)
+	e7:SetType(EFFECT_TYPE_FIELD)
+	e7:SetCode(EFFECT_SUMMON_PROC)
+	e7:SetTargetRange(LOCATION_HAND,0)
+	e7:SetCondition(s.ntcon)
+	e7:SetTarget(aux.FieldSummonProcTg(function(e,c) return c:IsLevelAbove(5) end))
+	Duel.RegisterEffect(e7,tp)
+	local e8=e7:Clone()
+	e8:SetCode(EFFECT_SET_PROC)
+	Duel.RegisterEffect(e8,tp)
 end
+
 function s.atkcon(e)
 	return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsAttackPos),e:GetHandlerPlayer(),LOCATION_MZONE,0,2,nil)
 end
+
 function s.atklimit(e,c)
 	return c~=e:GetHandlerPlayer() and c:IsAttackPos() and c:GetAttack()~=Duel.GetFieldGroup(e:GetHandlerPlayer(),LOCATION_MZONE,0):GetMaxGroup(Card.GetAttack):GetFirst():GetAttack()
 end
+
 function s.indct(e,re,r,rp)
-	if (r&REASON_BATTLE+REASON_EFFECT)~=0 then
+	if (r&REASON_EFFECT~=0 or r&REASON_BATTLE~=0) and rp~=e:GetHandlerPlayer() then
 		return 1
 	else 
 		return 0 
 	end
 end
+
 function s.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and ev>0
 end
+
 function s.drop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Draw(tp,1,REASON_EFFECT)
 end
+
 function s.lpcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetTurnPlayer()==tp
 end
+
 function s.lpop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)
 	if ct>0 then
 		Duel.Recover(tp,ct*500,REASON_EFFECT)
 	end
+end
+
+function s.ntcon(e,c,minc)
+	if c==nil then return true end
+	local tp=e:GetHandlerPlayer()
+	return Duel.HasFlagEffect(tp,id) and minc==0 and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end
