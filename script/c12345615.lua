@@ -129,5 +129,5 @@ end
 function s.ntcon(e,c,minc)
 	if c==nil then return true end
 	local tp=e:GetHandlerPlayer()
-	return Duel.HasFlagEffect(tp,id) and minc==0 and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
+	return minc==0
 end
