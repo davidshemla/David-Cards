@@ -67,7 +67,7 @@ function s.sdcon(e)
 	return not Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0x3013),0,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	return (re:IsHasType(EFFECT_TYPE_ACTIVATE) or re:IsActiveType(TYPE_MONSTER+TYPE_SPELL+TYPE_TRAP)) and Duel.IsChainNegatable(ev) and re:GetHandler():GetControler()~=tp
+	return re:GetHandler():GetControler()~=tp and Duel.IsChainNegatable(ev)
 end
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
