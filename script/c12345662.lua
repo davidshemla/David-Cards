@@ -110,7 +110,7 @@ function s.placeCounters(e,tp,eg,ep,ev,re,r,rp)
     while tc do
         if tc:IsType(TYPE_MONSTER) then
             local count=tc:GetLevel()+tc:GetRank()+tc:GetLink()
-            tc:AddCounter(0x1019,count) -- Use the fog counter ID
+            tc:AddCounter(0x1019,count)
         end
         tc = eg:GetNext()
     end

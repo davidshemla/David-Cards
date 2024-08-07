@@ -80,6 +80,7 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.RegisterEffect(e6,tp)
 	--summon without tribute
 	local e7=Effect.CreateEffect(c)
+	e7:SetDescription(aux.Stringid(id, 0))
 	e7:SetType(EFFECT_TYPE_FIELD)
 	e7:SetCode(EFFECT_SUMMON_PROC)
 	e7:SetTargetRange(LOCATION_HAND,0)
@@ -89,6 +90,21 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	local e8=e7:Clone()
 	e8:SetCode(EFFECT_SET_PROC)
 	Duel.RegisterEffect(e8,tp)
+	--no limit on Normal Summons
+	local e9=Effect.CreateEffect(c)
+	e9:SetType(EFFECT_TYPE_FIELD)
+	e9:SetCode(EFFECT_SET_SUMMON_COUNT_LIMIT)
+	e9:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e9:SetTargetRange(1,0)
+	e9:SetValue(99)
+	Duel.RegisterEffect(e9,tp)
+	-- Draw until you have 4 cards
+	local e10=Effect.CreateEffect(c)
+	e10:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e10:SetCode(EVENT_PREDRAW)
+	e10:SetCondition(s.drcon2)
+	e10:SetOperation(s.drop2)
+	Duel.RegisterEffect(e10,tp)
 end
 
 function s.atkcon(e)
@@ -130,4 +146,16 @@ function s.ntcon(e,c,minc)
 	if c==nil then return true end
 	local tp=e:GetHandlerPlayer()
 	return minc==0 and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+end
+
+function s.drcon2(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.GetTurnPlayer()==tp and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)<4
+end
+
+function s.drop2(e,tp,eg,ep,ev,re,r,rp)
+	local hg=Duel.GetFieldGroup(tp,LOCATION_HAND,0)
+	local ct=4-hg:GetCount()-1
+	if ct>0 then
+		Duel.Draw(tp,ct,REASON_EFFECT)
+	end
 end

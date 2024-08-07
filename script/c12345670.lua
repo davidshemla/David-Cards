@@ -15,7 +15,7 @@ function s.initial_effect(c)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCode(EVENT_PHASE+PHASE_STANDBY)
 	e2:SetCountLimit(1)
-	e2:SetOperation(s.operation)
+	e2:SetOperation(s.placeCounters)
 	c:RegisterEffect(e2)
 	--atk up
 	local e3=Effect.CreateEffect(c)
@@ -42,12 +42,15 @@ end
 s.listed_series={0x18}
 s.counter_place_list={0x109}
 s.listed_names={90135989}
-function s.operation(e,tp,eg,ep,ev,re,r,rp)
+function s.placeCounters(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
 	for tc in aux.Next(g) do
-		tc:AddCounter(0x1019,1)
+		if tc:IsType(TYPE_MONSTER) then
+			local count=tc:GetLevel()+tc:GetRank()+tc:GetLink()
+			tc:AddCounter(0x1019,count)
+		end
 	end
 end
 function s.atkval(e,c)
