@@ -105,6 +105,22 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e10:SetCondition(s.drcon2)
 	e10:SetOperation(s.drop2)
 	Duel.RegisterEffect(e10,tp)
+	-- No limit to hand size
+	local e11=Effect.CreateEffect(c)
+	e11:SetType(EFFECT_TYPE_FIELD)
+	e11:SetCode(EFFECT_HAND_LIMIT)
+	e11:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e11:SetTargetRange(1,0)
+	e11:SetValue(99)
+	Duel.RegisterEffect(e11,tp)
+	-- Shuffle and draw during Standby Phase
+	local e12=Effect.CreateEffect(c)
+	e12:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e12:SetCode(EVENT_PHASE+PHASE_STANDBY)
+	e12:SetCountLimit(1)
+	e12:SetCondition(s.stbcon)
+	e12:SetOperation(s.stbop)
+	Duel.RegisterEffect(e12,tp)
 end
 
 function s.atkcon(e)
@@ -157,5 +173,21 @@ function s.drop2(e,tp,eg,ep,ev,re,r,rp)
 	local ct=4-hg:GetCount()-1
 	if ct>0 then
 		Duel.Draw(tp,ct,REASON_EFFECT)
+	end
+end
+
+function s.stbcon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.GetTurnPlayer()==tp
+end
+
+function s.stbop(e,tp,eg,ep,ev,re,r,rp)
+	if Duel.SelectYesNo(tp,aux.Stringid(id,1)) then
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
+		local g=Duel.SelectMatchingCard(tp,aux.TRUE,tp,LOCATION_HAND,0,1,99,nil)
+		if g:GetCount()>0 then
+			Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+			Duel.ShuffleDeck(tp)
+			Duel.Draw(tp,g:GetCount(),REASON_EFFECT)
+		end
 	end
 end
