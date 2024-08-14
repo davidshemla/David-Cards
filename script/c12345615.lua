@@ -121,6 +121,12 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e12:SetCondition(s.stbcon)
 	e12:SetOperation(s.stbop)
 	Duel.RegisterEffect(e12,tp)
+	-- Reveal opponent's hand
+	local e13=Effect.CreateEffect(c)
+	e13:SetType(EFFECT_TYPE_FIELD)
+	e13:SetCode(EFFECT_PUBLIC)
+	e13:SetTargetRange(0,LOCATION_HAND)
+	Duel.RegisterEffect(e13,tp)
 end
 
 function s.atkcon(e)

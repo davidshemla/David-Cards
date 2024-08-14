@@ -48,8 +48,8 @@ end
 function s.operation(e, tp, eg, ep, ev, re, r, rp)
     local tc = e:GetLabelObject()
     if tc:IsRelateToBattle() and tc:IsFaceup() then
-        local atk = tc:GetBaseAttack()
-        local def = tc:GetBaseDefense()
+        local atk = tc:GetAttack()
+        local def = tc:GetDefense()
 
         -- Double ATK and DEF
         local e1 = Effect.CreateEffect(e:GetHandler())
