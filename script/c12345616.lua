@@ -115,6 +115,7 @@ function s.initial_effect(c)
   e16:SetType(EFFECT_TYPE_QUICK_O)
   e16:SetCode(EVENT_FREE_CHAIN)
   e16:SetRange(LOCATION_MZONE)
+  e16:SetHintTiming(0,TIMING_MAIN_END)
   e16:SetCountLimit(1)
   e16:SetCategory(CATEGORY_SPECIAL_SUMMON)
   e16:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -201,6 +202,6 @@ end
 function s.ss_operation(e,tp,eg,ep,ev,re,r,rp)
   local tc = Duel.GetFirstTarget()
   if tc and tc:IsRelateToEffect(e) then
-    Duel.SpecialSummon(tc, 0, 1-tp, 1-tp, false, false, POS_FACEUP)
+    Duel.SpecialSummon(tc, 0, 1-tp, 1-tp, true, false, POS_FACEUP_ATTACK)
   end
 end
