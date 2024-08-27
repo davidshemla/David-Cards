@@ -158,7 +158,7 @@ function s.lpcon(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.lpop(e,tp,eg,ep,ev,re,r,rp)
-	local ct=Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)
+	local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
 	if ct>0 then
 		Duel.Recover(tp,ct*500,REASON_EFFECT)
 	end

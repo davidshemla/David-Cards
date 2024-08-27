@@ -122,6 +122,15 @@ function s.initial_effect(c)
 	e16:SetRange(LOCATION_SZONE)
 	e16:SetTargetRange(0,LOCATION_MZONE)
 	c:RegisterEffect(e16)
+	-- Continuous effect to switch face-down monsters to face-up Defense Position
+    local e16a=Effect.CreateEffect(c)
+	e16a:SetType(EFFECT_TYPE_FIELD)
+	e16a:SetCode(EFFECT_SET_POSITION)
+	e16a:SetProperty(EFFECT_FLAG_SET_AVAILABLE)
+	e16a:SetRange(LOCATION_SZONE)
+	e16a:SetTargetRange(0,LOCATION_MZONE)
+	e16a:SetValue(POS_FACEUP_ATTACK)
+	c:RegisterEffect(e16a)
 	--special summon from hand or GY
 	local e17=Effect.CreateEffect(c)
 	e17:SetDescription(aux.Stringid(id,0))
@@ -254,6 +263,17 @@ function s.costchange(e,re,rp,val)
 	else
 		return val
 	end
+end
+
+function s.flipop(e,tp,eg,ep,ev,re,r,rp)
+    local g=Duel.GetMatchingGroup(Card.IsFacedown,tp,0,LOCATION_MZONE,nil)
+    local tc=g:GetFirst()
+    while tc do
+        if tc:IsDefensePos() then
+            Duel.ChangePosition(tc,POS_FACEUP_DEFENSE)
+        end
+        tc=g:GetNext()
+    end
 end
 
 function s.filter(c,e,sp)
