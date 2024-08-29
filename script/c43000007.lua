@@ -16,14 +16,22 @@ function s.initial_effect(c)
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,1))
     e2:SetCategory(CATEGORY_DAMAGE)
-    e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-    e2:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
+    e2:SetType(EFFECT_TYPE_CONTINUOUS + EFFECT_TYPE_FIELD)
+    e2:SetProperty(EFFECT_FLAG_DAMAGE_STEP + EFFECT_FLAG_DELAY)
     e2:SetCode(EVENT_DESTROYED)
     e2:SetRange(LOCATION_MZONE)
     e2:SetCondition(s.damcon)
-    e2:SetTarget(s.damtg)
     e2:SetOperation(s.damop)
     c:RegisterEffect(e2)
+
+    -- Gain ATK and piercing battle damage
+    local e3=Effect.CreateEffect(c)
+    e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    e3:SetCode(EVENT_BE_BATTLE_TARGET)
+    e3:SetRange(LOCATION_MZONE)
+    e3:SetCondition(s.piercing_condition)
+    e3:SetOperation(s.piercing_operation)
+    c:RegisterEffect(e3)
 end
 
 -- Special Summon condition
@@ -52,26 +60,47 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	g:DeleteGroup()
 end
 
+-- Effect 2 functions
 -- Damage condition
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
     local tc=eg:GetFirst()
     local rc=tc:GetReasonCard()
-    return tc:IsReason(REASON_BATTLE+REASON_EFFECT) and tc:IsPreviousLocation(LOCATION_MZONE)
-end
-
--- Damage target
-function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return true end
-    local tc=eg:GetFirst()
-    local dam=math.max(tc:GetAttack(), tc:GetDefense())
-    if dam<0 then dam=0 end
-    Duel.SetTargetPlayer(1-tp)
-    Duel.SetTargetParam(dam)
-    Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
+    return tc:IsReason(REASON_BATTLE+REASON_EFFECT) and tc:IsPreviousLocation(LOCATION_MZONE) and rc:IsSetCard(0x3008)
 end
 
 -- Damage operation
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
+    local tc=eg:GetFirst()
+    local dam=math.max(tc:GetAttack(), tc:GetDefense())
+    if dam<0 then dam=0 end
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+    Duel.SetTargetPlayer(1-tp)
+    Duel.SetTargetParam(dam)
+    Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
     local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
     Duel.Damage(p,d,REASON_EFFECT)
+end
+
+-- Effect 3 functions
+function s.piercing_condition(e,tp,eg,ep,ev,re,r,rp)
+    local c=Duel.GetAttacker()
+    local tc=Duel.GetAttackTarget()
+    return c:IsType(TYPE_MONSTER) and c:IsSetCard(0x3008) and c:IsControler(tp) and tc and tc:IsDefensePos()
+end
+
+function s.piercing_operation(e,tp,eg,ep,ev,re,r,rp)
+    local c=Duel.GetAttacker()
+    if c:IsRelateToBattle() then
+        local e1=Effect.CreateEffect(e:GetHandler())
+        e1:SetType(EFFECT_TYPE_SINGLE)
+        e1:SetCode(EFFECT_SET_ATTACK_FINAL)
+        e1:SetValue(c:GetAttack()+500)
+        e1:SetReset(RESET_PHASE+PHASE_DAMAGE_CAL)
+        c:RegisterEffect(e1)
+        local e2=Effect.CreateEffect(e:GetHandler())
+        e2:SetType(EFFECT_TYPE_SINGLE)
+        e2:SetCode(EFFECT_PIERCE)
+        e2:SetReset(RESET_PHASE+PHASE_DAMAGE_CAL)
+        c:RegisterEffect(e2)
+    end
 end

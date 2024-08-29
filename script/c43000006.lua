@@ -51,7 +51,8 @@ end
 
 -- Special Summon Quick Effect condition
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return ep~=tp and re:IsActiveType(TYPE_SPELL+TYPE_TRAP) and Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil)
+	return ep~=tp and re:IsActiveType(TYPE_MONSTER+TYPE_SPELL+TYPE_TRAP) and Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil)
+		and Duel.GetLocationCount(tp,LOCATION_MZONE) > 0
 end
 
 -- Special Summon Quick Effect target

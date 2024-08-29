@@ -93,7 +93,7 @@ end
 function s.target_special_summon(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(1-tp) and s.filter_special_summon(chkc,e,tp) end
     if chk==0 then return Duel.IsExistingTarget(s.filter_special_summon,tp,0,LOCATION_REMOVED,1,nil,e,tp) end
-    local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
+    local ft=Duel.GetLocationCount(1-tp,LOCATION_MZONE)
     if ft>3 then ft=3 end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
     local g=Duel.SelectTarget(tp,s.filter_special_summon,tp,0,LOCATION_REMOVED,1,ft,nil,e,tp)
@@ -102,7 +102,7 @@ end
 
 -- Operation for special summon
 function s.operation_special_summon(e,tp,eg,ep,ev,re,r,rp)
-    local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
+    local ft=Duel.GetLocationCount(1-tp,LOCATION_MZONE)
     local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
     local sg=g:Filter(Card.IsRelateToEffect,nil,e)
     if #sg>ft then

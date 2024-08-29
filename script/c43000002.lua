@@ -2,14 +2,14 @@
 local s,id=GetID()
 function s.initial_effect(c)
     c:SetUniqueOnField(1,0,84327329)
-    -- Cannot attack except "Elemental HERO Crashing Clayman"
-    local e1=Effect.CreateEffect(c)
-    e1:SetType(EFFECT_TYPE_FIELD)
-    e1:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)
-    e1:SetRange(LOCATION_MZONE)
-    e1:SetTargetRange(0,LOCATION_MZONE)
-    e1:SetTarget(s.atktg)
-    c:RegisterEffect(e1)
+    -- Limit attacks
+    local e2=Effect.CreateEffect(c)
+	e2:SetType(EFFECT_TYPE_FIELD)
+	e2:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)
+	e2:SetRange(LOCATION_MZONE)
+	e2:SetTargetRange(0,LOCATION_MZONE)
+	e2:SetValue(s.atlimit)
+	c:RegisterEffect(e2)
 
     -- Special summon "Elemental HERO Crashing Clayman" if an "Elemental HERO" monster is special summoned
     local e2=Effect.CreateEffect(c)
@@ -40,9 +40,10 @@ function s.initial_effect(c)
 end
 
 -- Effect 1: Restrict attacks
-function s.atktg(e,c)
-    return c:IsFaceup() and c:IsSetCard(0x3008) and not c:IsCode(id)
+function s.atlimit(e,c)
+	return c~=e:GetHandler()
 end
+
 
 -- Effect 2: Special summon "Elemental HERO Crashing Clayman" if an "Elemental HERO" monster is special summoned
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)

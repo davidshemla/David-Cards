@@ -21,15 +21,6 @@ function s.initial_effect(c)
     e2:SetTarget(s.position_target)
     e2:SetOperation(s.position_operation)
     c:RegisterEffect(e2)
-
-    -- Gain ATK and piercing battle damage
-    local e3=Effect.CreateEffect(c)
-    e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-    e3:SetCode(EVENT_BE_BATTLE_TARGET)
-    e3:SetRange(LOCATION_MZONE)
-    e3:SetCondition(s.piercing_condition)
-    e3:SetOperation(s.piercing_operation)
-    c:RegisterEffect(e3)
 end
 
 -- Effect 1 functions
@@ -77,28 +68,4 @@ end
 
 function s.attack_target(e,c)
     return c==e:GetLabelObject()
-end
-
--- Effect 3 functions
-function s.piercing_condition(e,tp,eg,ep,ev,re,r,rp)
-    local c=Duel.GetAttacker()
-    local tc=Duel.GetAttackTarget()
-    return c:IsType(TYPE_MONSTER) and c:IsSetCard(0x3008) and c:IsControler(tp) and tc and tc:IsDefensePos()
-end
-
-function s.piercing_operation(e,tp,eg,ep,ev,re,r,rp)
-    local c=Duel.GetAttacker()
-    if c:IsRelateToBattle() then
-        local e1=Effect.CreateEffect(e:GetHandler())
-        e1:SetType(EFFECT_TYPE_SINGLE)
-        e1:SetCode(EFFECT_SET_ATTACK_FINAL)
-        e1:SetValue(c:GetAttack()+500)
-        e1:SetReset(RESET_PHASE+PHASE_DAMAGE_CAL)
-        c:RegisterEffect(e1)
-        local e2=Effect.CreateEffect(e:GetHandler())
-        e2:SetType(EFFECT_TYPE_SINGLE)
-        e2:SetCode(EFFECT_PIERCE)
-        e2:SetReset(RESET_PHASE+PHASE_DAMAGE_CAL)
-        c:RegisterEffect(e2)
-    end
 end
