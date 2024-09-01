@@ -64,8 +64,17 @@ end
 -- Damage condition
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
     local tc=eg:GetFirst()
-    local rc=tc:GetReasonCard()
-    return tc:IsReason(REASON_BATTLE+REASON_EFFECT) and tc:IsPreviousLocation(LOCATION_MZONE) and rc:IsSetCard(0x3008)
+    -- Check if it was destroyed by battle
+    if tc:IsReason(REASON_BATTLE) then
+        local rc=tc:GetBattleTarget()
+        return rc and rc:IsSetCard(0x3008)
+    end
+    -- Check if it was destroyed by a card effect (including negation effects)
+    if tc:IsReason(REASON_EFFECT) then
+        local rc=tc:GetReasonCard()
+        return (rc and rc:IsSetCard(0x3008)) or (re and re:GetHandler():IsSetCard(0x3008))
+    end
+    return false
 end
 
 -- Damage operation
