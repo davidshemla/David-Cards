@@ -86,7 +86,7 @@ end
 
 -- Filter for special summon
 function s.filter_special_summon(c,e,tp)
-    return c:IsFaceup() and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+    return c:IsMonster() and c:IsFaceup() and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
 
 -- Target for special summon
@@ -94,7 +94,7 @@ function s.target_special_summon(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(1-tp) and s.filter_special_summon(chkc,e,tp) end
     if chk==0 then return Duel.IsExistingTarget(s.filter_special_summon,tp,0,LOCATION_REMOVED,1,nil,e,tp) end
     local ft=Duel.GetLocationCount(1-tp,LOCATION_MZONE)
-    if ft>3 then ft=3 end
+    if ft>5 then ft=5 end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
     local g=Duel.SelectTarget(tp,s.filter_special_summon,tp,0,LOCATION_REMOVED,1,ft,nil,e,tp)
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,#g,0,0)
@@ -111,80 +111,90 @@ function s.operation_special_summon(e,tp,eg,ep,ev,re,r,rp)
     end
     local tc=sg:GetFirst()
     while tc do
-        Duel.SpecialSummonStep(tc,0,tp,1-tp,false,false,POS_FACEUP_ATTACK)
+        Duel.SpecialSummonStep(tc,0,tp,1-tp,true,false,POS_FACEUP_ATTACK)
 
-        -- Apply restrictions
-        -- 1. Cannot Attack
+        -- Apply the following restrictions to the summoned monster:
+        -- 1. Effects are Negated
         local e1=Effect.CreateEffect(e:GetHandler())
         e1:SetType(EFFECT_TYPE_SINGLE)
-        e1:SetCode(EFFECT_CANNOT_ATTACK)
+        e1:SetCode(EFFECT_DISABLE)
         e1:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e1,true)
 
-        -- 2. Cannot Change Battle Position
         local e2=Effect.CreateEffect(e:GetHandler())
         e2:SetType(EFFECT_TYPE_SINGLE)
-        e2:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
+        e2:SetCode(EFFECT_DISABLE_EFFECT)
         e2:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e2,true)
 
-        -- 3. Effects are Negated
+        -- 2. Cannot Activate Its Effects
         local e3=Effect.CreateEffect(e:GetHandler())
         e3:SetType(EFFECT_TYPE_SINGLE)
-        e3:SetCode(EFFECT_DISABLE)
+        e3:SetCode(EFFECT_CANNOT_TRIGGER)
         e3:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e3,true)
 
+        -- 3. Set ATK to 0
         local e4=Effect.CreateEffect(e:GetHandler())
         e4:SetType(EFFECT_TYPE_SINGLE)
-        e4:SetCode(EFFECT_DISABLE_EFFECT)
+        e4:SetCode(EFFECT_SET_ATTACK)
+        e4:SetValue(0)
         e4:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e4,true)
 
-        -- 4. Cannot be Used as Tribute
+        -- 4. Cannot Attack
         local e5=Effect.CreateEffect(e:GetHandler())
         e5:SetType(EFFECT_TYPE_SINGLE)
-        e5:SetCode(EFFECT_UNRELEASABLE_SUM)
+        e5:SetCode(EFFECT_CANNOT_ATTACK)
         e5:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e5,true)
 
-        -- 5. Cannot be Used as Fusion Material
+        -- 5. Cannot Change Battle Position
         local e6=Effect.CreateEffect(e:GetHandler())
         e6:SetType(EFFECT_TYPE_SINGLE)
-        e6:SetCode(EFFECT_CANNOT_BE_FUSION_MATERIAL)
-        e6:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
-        e6:SetValue(1)
+        e6:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
+        e6:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e6,true)
 
-        -- 6. Cannot be Used as Synchro Material
+        -- 6. Cannot be Used as Tribute
         local e7=Effect.CreateEffect(e:GetHandler())
         e7:SetType(EFFECT_TYPE_SINGLE)
-        e7:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
-        e7:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
-        e7:SetValue(1)
+        e7:SetCode(EFFECT_UNRELEASABLE_SUM)
+        e7:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e7,true)
 
-        -- 7. Cannot be Used as Xyz Material
+        -- 7. Cannot be Used as Fusion, Synchro, Xyz, or Link Material
         local e8=Effect.CreateEffect(e:GetHandler())
         e8:SetType(EFFECT_TYPE_SINGLE)
-        e8:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
         e8:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+        e8:SetCode(EFFECT_CANNOT_BE_FUSION_MATERIAL)
         e8:SetValue(1)
+        e8:SetReset(RESET_EVENT+RESETS_STANDARD)
         tc:RegisterEffect(e8,true)
 
-        -- 8. Cannot be Used as Link Material
-        local e9=Effect.CreateEffect(e:GetHandler())
-        e9:SetType(EFFECT_TYPE_SINGLE)
-        e9:SetCode(EFFECT_CANNOT_BE_LINK_MATERIAL)
-        e9:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
-        e9:SetValue(1)
+        local e9=e8:Clone()
+        e9:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
         tc:RegisterEffect(e9,true)
+
+        local e10=e8:Clone()
+        e10:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
+        tc:RegisterEffect(e10,true)
+
+        local e11=e8:Clone()
+        e11:SetCode(EFFECT_CANNOT_BE_LINK_MATERIAL)
+        tc:RegisterEffect(e11,true)
+
+        -- Ensure restrictions persist if the monster leaves the field
+        local e12=Effect.CreateEffect(e:GetHandler())
+        e12:SetType(EFFECT_TYPE_SINGLE)
+        e12:SetCode(EFFECT_CANNOT_TRIGGER)
+        e12:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_TURN_SET)
+        tc:RegisterEffect(e12,true)
 
         tc=sg:GetNext()
     end
     Duel.SpecialSummonComplete()
 end
-
 
 -- Condition for inflicting damage when destroying an opponent's monster by battle
 function s.condition_inflict_damage(e,tp,eg,ep,ev,re,r,rp)
@@ -196,6 +206,6 @@ end
 function s.operation_inflict_damage(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
     if c:GetBattleTarget() and c:GetBattleTarget():IsControler(1-tp) then
-        Duel.Damage(1-tp,500,REASON_EFFECT) -- Inflict 500 damage to your opponent
+        Duel.Damage(1-tp,1000,REASON_EFFECT) -- Inflict 1000 damage to your opponent
     end
 end

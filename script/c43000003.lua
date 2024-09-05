@@ -13,28 +13,33 @@ function s.initial_effect(c)
     e1:SetOperation(s.spop)
     c:RegisterEffect(e1)
 
-    -- Quick Effect: Protect all "Elemental HERO" monsters you control
+    -- Continuous Effect: Protect all "Elemental HERO" monsters you control during opponent's turn
     local e2=Effect.CreateEffect(c)
-    e2:SetDescription(aux.Stringid(id,1))
-    e2:SetType(EFFECT_TYPE_QUICK_O)
-    e2:SetCode(EVENT_FREE_CHAIN)
+    e2:SetType(EFFECT_TYPE_FIELD)
+    e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
     e2:SetRange(LOCATION_MZONE)
-    e2:SetCountLimit(1,id)
-    e2:SetTarget(s.ptarget)
-    e2:SetOperation(s.poperation)
+    e2:SetTargetRange(LOCATION_MZONE,0)
+    e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x3008))
+    e2:SetCondition(s.protcon)
+    e2:SetValue(1)
     c:RegisterEffect(e2)
+    
+    local e3=e2:Clone()
+    e3:SetCode(EFFECT_IMMUNE_EFFECT)
+    e3:SetValue(s.efilter)
+    c:RegisterEffect(e3)
 
     -- Draw and Special Summon if used as material
-    local e3=Effect.CreateEffect(c)
-    e3:SetDescription(aux.Stringid(id,2))
-    e3:SetCategory(CATEGORY_DRAW+CATEGORY_SPECIAL_SUMMON)
-    e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-    e3:SetCode(EVENT_TO_GRAVE)
-    e3:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
-    e3:SetCondition(s.drcon)
-    e3:SetTarget(s.drtg)
-    e3:SetOperation(s.drop)
-    c:RegisterEffect(e3)
+    local e4=Effect.CreateEffect(c)
+    e4:SetDescription(aux.Stringid(id,2))
+    e4:SetCategory(CATEGORY_DRAW+CATEGORY_SPECIAL_SUMMON)
+    e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+    e4:SetCode(EVENT_TO_GRAVE)
+    e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
+    e4:SetCondition(s.drcon)
+    e4:SetTarget(s.drtg)
+    e4:SetOperation(s.drop)
+    c:RegisterEffect(e4)
 end
 
 -- Effect 1: Special summon from hand
@@ -56,37 +61,12 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
     Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 end
 
--- Effect 2: Protect all "Elemental HERO" monsters you control
-function s.ptarget(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return true end
-    -- No specific target selection needed for this effect
-end
-
-function s.poperation(e,tp,eg,ep,ev,re,r,rp)
-    local g=Duel.GetMatchingGroup(Card.IsSetCard,tp,LOCATION_MZONE,0,nil,0x3008)
-    if #g>0 then
-        for tc in aux.Next(g) do
-            -- Make monsters unable to be destroyed by battle
-            local e1=Effect.CreateEffect(e:GetHandler())
-            e1:SetType(EFFECT_TYPE_SINGLE)
-            e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
-            e1:SetValue(1)
-            e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
-            tc:RegisterEffect(e1)
-            
-            -- Make monsters unaffected by opponent's effects
-            local e2=Effect.CreateEffect(e:GetHandler())
-            e2:SetType(EFFECT_TYPE_SINGLE)
-            e2:SetCode(EFFECT_IMMUNE_EFFECT)
-            e2:SetValue(s.efilter)
-            e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
-            tc:RegisterEffect(e2)
-        end
-    end
+-- Effect 2: Continuous Protection during opponent's turn
+function s.protcon(e)
+    return Duel.GetTurnPlayer()~=e:GetHandlerPlayer()
 end
 
 function s.efilter(e,re)
-    -- Immunity to opponent's effects
     return e:GetOwnerPlayer()~=re:GetOwnerPlayer()
 end
 
