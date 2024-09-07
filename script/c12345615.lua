@@ -127,6 +127,14 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e13:SetCode(EFFECT_PUBLIC)
 	e13:SetTargetRange(0,LOCATION_HAND)
 	Duel.RegisterEffect(e13,tp)
+	-- Once per turn, you can look at your deck and add 1 card to the hand
+	local e14=Effect.CreateEffect(c)
+	e14:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e14:SetCode(EVENT_PHASE+PHASE_STANDBY)
+	e14:SetCountLimit(1)
+	e14:SetCondition(s.lookcon)
+	e14:SetOperation(s.lookop)
+	Duel.RegisterEffect(e14,tp)
 end
 
 function s.atkcon(e)
@@ -195,5 +203,22 @@ function s.stbop(e,tp,eg,ep,ev,re,r,rp)
 			Duel.ShuffleDeck(tp)
 			Duel.Draw(tp,g:GetCount(),REASON_EFFECT)
 		end
+	end
+end
+
+function s.lookcon(e,tp,eg,ep,ev,re,r,rp)
+	-- Check if it's the player's turn and ensure it's not already activated this turn
+	return Duel.GetTurnPlayer()==tp and e:GetHandler():GetFlagEffect(id)==0
+end
+
+function s.lookop(e,tp,eg,ep,ev,re,r,rp)
+	-- Prevent multiple activations per turn
+	e:GetHandler():RegisterFlagEffect(id,RESET_PHASE+PHASE_END,0,1)
+	
+	-- Declare 1 card name and create that card in hand
+	if Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
+		local ac=Duel.AnnounceCard(tp)
+		local token=Duel.CreateToken(tp,ac)
+		Duel.SendtoHand(token,nil,REASON_EFFECT)
 	end
 end

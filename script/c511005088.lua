@@ -261,6 +261,34 @@ if not SealedDuel then
 				return isrc(c,r)
 			end
 		end
+
+		-- Treat as all monster attributes
+		if true then
+			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(4009,1)) 
+			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(4009,1)) 
+			local getattr=Card.GetAttribute
+			Card.GetAttribute=function(c)
+				if c:IsMonster() then return 0x7f end
+				return getattr(c)
+			end
+			local getorigattr=Card.GetOriginalAttribute
+			Card.GetOriginalAttribute=function(c)
+				if c:IsMonster() then return 0x7f end
+				return getorigattr(c)
+			end
+			local getprevattr=Card.GetPreviousAttributeOnField
+			Card.GetPreviousAttributeOnField=function(c)
+				if (c:GetPreviousTypeOnField()&TYPE_MONSTER)~=0 then return 0x7f end
+				return getprevattr(c)
+			end
+			local isattr=Card.IsAttribute
+			Card.IsAttribute=function(c,a)
+				if c:IsMonster() then return true end
+				return isattr(c,a)
+			end
+		end
+
+
 		--anime counterparts select
 		anime=true
 		if anime then
