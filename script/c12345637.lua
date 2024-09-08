@@ -57,7 +57,7 @@ end
 s.listed_names={0x104f,24696097}
 s.assault_mode=24696097
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
-    return not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) and Duel.IsChainNegatable(ev)
+    return not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) and rp~=tp and Duel.IsChainNegatable(ev)
 end
 
 function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
