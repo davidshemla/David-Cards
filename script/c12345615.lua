@@ -57,14 +57,14 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e3:SetTargetRange(LOCATION_SZONE,0)
 	e3:SetValue(s.indct)
 	Duel.RegisterEffect(e3,tp)
-	--Prevent destruction, increase ATK/DEF
-	local e4=Effect.CreateEffect(c)
-	e4:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
+	-- Destruction replacement effect
+	local e4 = Effect.CreateEffect(c)
+	e4:SetType(EFFECT_TYPE_CONTINUOUS + EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_SEND_REPLACE)
-	e4:SetTargetRange(LOCATION_MZONE,0)
+	e4:SetTargetRange(LOCATION_MZONE, 0)
 	e4:SetTarget(s.reptg)
-    e4:SetValue(s.repval)
-	Duel.RegisterEffect(e4,tp)
+	e4:SetValue(s.repval)
+	Duel.RegisterEffect(e4, tp)
 	-- Draw a card when losing LP or paying LP
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
@@ -162,32 +162,44 @@ function s.indct(e,re,r,rp)
 end
 
 function s.repfilter(c,tp)
-    return c:IsFaceup() and c:IsControler(tp) and c:IsMonster() and c:IsReason(REASON_BATTLE+REASON_EFFECT+REASON_COST) and not c:IsReason(REASON_REPLACE)
+    return c:IsFaceup() and c:IsControler(tp) and c:IsLocation(LOCATION_MZONE)
+    and (c:IsReason(REASON_BATTLE) or (c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()~=tp))
 end
 
-function s.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return eg:IsExists(s.repfilter,1,nil,tp) end
-    Duel.Hint(HINT_CARD,0,id)
-    return true
+function s.repcon(e,tp,eg,ep,ev,re,r,rp)
+    -- Check if the destruction is caused by your opponent and it's your monster on the field
+    return re and re:GetOwnerPlayer()~=tp
 end
 
-function s.repval(e,c)
-    local atk=c:GetAttack()
-    local def=c:GetDefense()
-    local new_atk=math.floor(atk*1.1)
-    local new_def=math.floor(def*1.1)
-    local e1=Effect.CreateEffect(e:GetHandler())
+-- Target function: Check if any monsters match the filter to apply the replacement effect
+function s.reptg(e, tp, eg, ep, ev, re, r, rp, chk)
+	if chk == 0 then return eg:IsExists(s.repfilter, 1, nil, tp) end
+	return true
+end
+	
+-- Replacement effect: Increase ATK and DEF by 10% instead of being sent to the GY
+function s.repval(e, c)
+    local atk = c:GetAttack()
+    local def = c:GetDefense()
+    local new_atk = math.floor(atk * 1.1)
+    local new_def = math.floor(def * 1.1)
+    
+    -- Increase ATK
+    local e1 = Effect.CreateEffect(e:GetHandler())
     e1:SetType(EFFECT_TYPE_SINGLE)
     e1:SetCode(EFFECT_SET_ATTACK_FINAL)
     e1:SetValue(new_atk)
-    e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+    e1:SetReset(RESET_EVENT + RESETS_STANDARD)
     c:RegisterEffect(e1)
-    local e2=Effect.CreateEffect(e:GetHandler())
+    
+    -- Increase DEF
+    local e2 = Effect.CreateEffect(e:GetHandler())
     e2:SetType(EFFECT_TYPE_SINGLE)
     e2:SetCode(EFFECT_SET_DEFENSE_FINAL)
     e2:SetValue(new_def)
-    e2:SetReset(RESET_EVENT+RESETS_STANDARD)
+    e2:SetReset(RESET_EVENT + RESETS_STANDARD)
     c:RegisterEffect(e2)
+    
     return true
 end
 
