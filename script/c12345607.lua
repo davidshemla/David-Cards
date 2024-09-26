@@ -1,79 +1,70 @@
---Immortal call of the Haunted
+--トリックスター・ディーヴァリディス
+--Trickstar Divaridis
+--Credit to Larry126 and Logical Nonsense
+--Substitute ID
 local s,id=GetID()
 function s.initial_effect(c)
-    --Activate
-    local e1=Effect.CreateEffect(c)
-    e1:SetType(EFFECT_TYPE_ACTIVATE)
-    e1:SetCode(EVENT_FREE_CHAIN)
-    c:RegisterEffect(e1)
-    
-    --Prevent destruction, increase ATK/DEF
-    local e2=Effect.CreateEffect(c)
-    e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
-    e2:SetCode(EFFECT_SEND_REPLACE)
-    e2:SetRange(LOCATION_SZONE)
-    e2:SetTarget(s.reptg)
-    e2:SetValue(s.repval)
-    c:RegisterEffect(e2)
-    
-    --Special Summon monsters from GY
-    local e3=Effect.CreateEffect(c)
-	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
-    e3:SetType(EFFECT_TYPE_IGNITION)
-    e3:SetRange(LOCATION_SZONE)
-    e3:SetCountLimit(1)
-    e3:SetTarget(s.sptg)
-    e3:SetOperation(s.spop)
-    c:RegisterEffect(e3)
+	--Link summon
+	Link.AddProcedure(c,s.matfilter,2,2)
+	--Must be properly summoned in order to be revived
+	c:EnableReviveLimit()
+	--Effect damage, optional trigger
+	local e1=Effect.CreateEffect(c)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_DAMAGE)
+	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
+	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_DELAY)
+	e1:SetTarget(s.sstg)
+	e1:SetOperation(s.ssop)
+	c:RegisterEffect(e1)
+	--Continuous effect damage on opponent's normal summon
+	local e2=Effect.CreateEffect(c)
+	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+	e2:SetCode(EVENT_SUMMON_SUCCESS)
+	e2:SetRange(LOCATION_MZONE)
+	e2:SetCondition(s.damcon)
+	e2:SetOperation(s.damop)
+	c:RegisterEffect(e2)
+	--Continuous effect damage on opponent's special summon
+	local e3=e2:Clone()
+	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
+	c:RegisterEffect(e3)
 end
 
-function s.repfilter(c,tp)
-    return c:IsFaceup() and c:IsControler(tp) and c:IsMonster() and c:IsReason(REASON_BATTLE+REASON_EFFECT+REASON_COST) and not c:IsReason(REASON_REPLACE)
+function s.matfilter(c,lc,sumtype,tp)
+	return c:IsSetCard(0xfb,lc,sumtype,tp)
 end
 
-function s.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return eg:IsExists(s.repfilter,1,nil,tp) end
-    Duel.Hint(HINT_CARD,0,id)
-    return true
+--Activation legality
+function s.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	Duel.SetTargetPlayer(1-tp)
+	Duel.SetTargetParam(200)
+	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,200)
 end
 
-function s.repval(e,c)
-    local atk=c:GetAttack()
-    local def=c:GetDefense()
-    local new_atk=math.floor(atk*1.1)
-    local new_def=math.floor(def*1.1)
-    local e1=Effect.CreateEffect(e:GetHandler())
-    e1:SetType(EFFECT_TYPE_SINGLE)
-    e1:SetCode(EFFECT_SET_ATTACK_FINAL)
-    e1:SetValue(new_atk)
-    e1:SetReset(RESET_EVENT+RESETS_STANDARD)
-    c:RegisterEffect(e1)
-    local e2=Effect.CreateEffect(e:GetHandler())
-    e2:SetType(EFFECT_TYPE_SINGLE)
-    e2:SetCode(EFFECT_SET_DEFENSE_FINAL)
-    e2:SetValue(new_def)
-    e2:SetReset(RESET_EVENT+RESETS_STANDARD)
-    c:RegisterEffect(e2)
-    return true
+--Performing the effect damage
+function s.ssop(e,tp,eg,ep,ev,re,r,rp)
+	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
+	Duel.Damage(p,d,REASON_EFFECT)
 end
 
-function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-        and Duel.IsExistingTarget(aux.NecroValleyFilter(Card.IsCanBeSpecialSummoned),tp,LOCATION_GRAVE,0,1,nil,e,0,tp,false,false) end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-    local g=Duel.SelectTarget(tp,aux.NecroValleyFilter(Card.IsCanBeSpecialSummoned),tp,LOCATION_GRAVE,0,1,Duel.GetLocationCount(tp,LOCATION_MZONE),nil,e,0,tp,false,false)
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,#g,0,0)
+--If opponent was the one to perform the summon
+function s.filter(c,p)
+	return c:GetSummonPlayer()==p
 end
 
-function s.spop(e,tp,eg,ep,ev,re,r,rp)
-    local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-    local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-    if ft<=0 then return end
-    local sg=g:Filter(Card.IsRelateToEffect,nil,e)
-    for tc in aux.Next(sg) do
-        if ft<=0 then break end
-        Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP)
-        ft=ft-1
-    end
-    Duel.SpecialSummonComplete()
+--Condition to check opponent's summon
+function s.damcon(e,tp,eg,ep,ev,re,r,rp)
+	return eg:IsExists(s.filter,1,nil,1-tp)
+end
+
+--Continuous effect to deal damage upon summon
+function s.damop(e,tp,eg,ep,ev,re,r,rp)
+	local ct=eg:FilterCount(s.filter,nil,1-tp)
+	if ct>0 then
+		Duel.Hint(HINT_CARD,1-tp,id)
+		Duel.Damage(1-tp,ct*200,REASON_EFFECT)
+	end
 end

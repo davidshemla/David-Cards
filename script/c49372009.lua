@@ -31,23 +31,26 @@ function s.lcheck(g,lc,sumtype,tp)
 	return g:CheckDifferentPropertyBinary(Card.GetAttribute,lc,sumtype,tp)
 end
 
-function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-    local result = Duel.GetTurnPlayer()==tp
-    return result
-end
-
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(nil,tp,0,LOCATION_HAND,1,nil) end
+    if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
     Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,1-tp,LOCATION_HAND)
 end
 
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-    local g=Duel.GetMatchingGroup(nil,tp,0,LOCATION_HAND,nil)
-    if #g>0 then
-        local max_count = math.min(#g, 2)
-        local sg=g:RandomSelect(1-tp, max_count)
+    local g=Duel.GetFieldGroup(tp,0,LOCATION_HAND)
+    local ct=#g
+    if ct==0 then return end
+    if ct<=2 then
+        -- If opponent has 2 or less cards, shuffle all into the Deck
+        Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+        Duel.ShuffleDeck(1-tp)
+    else
+        -- If opponent has 3 or more cards, reveal and select 2 to shuffle
+        Duel.ConfirmCards(tp,g)
+        local sg=g:Select(tp,2,2,nil)
         Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
         Duel.ShuffleDeck(1-tp)
+        Duel.ShuffleHand(1-tp)
     end
 end
 

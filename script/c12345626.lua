@@ -61,16 +61,6 @@ function s.initial_effect(c)
     e5:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
     e5:SetValue(1)
     c:RegisterEffect(e5)
-
-    --"Unchained" cards you control are unaffected by your opponent's card effects
-    local e8=Effect.CreateEffect(c)
-    e8:SetType(EFFECT_TYPE_FIELD)
-    e8:SetCode(EFFECT_IMMUNE_EFFECT)
-    e8:SetRange(LOCATION_FZONE)
-    e8:SetTargetRange(LOCATION_MZONE,0)
-    e8:SetTarget(s.unchtg)
-    e8:SetValue(s.immval)
-    c:RegisterEffect(e8)
 end
 s.listed_series={0x130}
 function s.thfilter(c)
