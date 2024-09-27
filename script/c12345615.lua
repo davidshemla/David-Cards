@@ -217,11 +217,9 @@ end
 
 function s.lpop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
-	if ct>0 then
-		Duel.Recover(tp,ct*500,REASON_EFFECT)
-	end
+	local current_lp = Duel.GetLP(tp)
+	Duel.SetLP(tp, current_lp + ct*500)  -- Increase LP by 500 times the number of your cards, without triggering "gain LP" effects
 end
-
 function s.ntcon(e,c,minc)
 	if c==nil then return true end
 	local tp=e:GetHandlerPlayer()
