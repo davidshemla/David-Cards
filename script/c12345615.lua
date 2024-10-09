@@ -216,10 +216,18 @@ function s.lpcon(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.lpop(e,tp,eg,ep,ev,re,r,rp)
-	local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
-	local current_lp = Duel.GetLP(tp)
-	Duel.SetLP(tp, current_lp + ct*500)  -- Increase LP by 500 times the number of your cards, without triggering "gain LP" effects
+	if Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_ONFIELD,0,1,nil,511009675) then	
+		local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
+		local current_lp = Duel.GetLP(tp)
+		Duel.SetLP(tp, current_lp + ct*500)
+	else
+		local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
+		if ct>0 then
+			Duel.Recover(tp,ct*500,REASON_EFFECT)
+		end
+	end
 end
+
 function s.ntcon(e,c,minc)
 	if c==nil then return true end
 	local tp=e:GetHandlerPlayer()
