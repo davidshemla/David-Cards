@@ -83,7 +83,7 @@ function s.rdop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
-	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
+	return ep~=tp and Duel.IsChainNegatable(ev)
 		and Duel.IsExistingMatchingCard(s.altfilter,tp,LOCATION_SZONE,0,3,nil,tp)
 end
 function s.filter2(c)

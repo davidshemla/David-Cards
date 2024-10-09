@@ -31,7 +31,7 @@ function s.confilter(c)
 end
 function s.ngcon(e,tp,eg,ep,ev,re,r,rp)
     local g=Duel.GetMatchingGroup(s.confilter,tp,LOCATION_MZONE,0,nil)
-    return g:GetClassCount(Card.GetCode)>1
+    return g:GetClassCount(Card.GetCode)>1 and re:GetOwnerPlayer()~=tp
 end
 function s.ngtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsChainNegatable(ev) end

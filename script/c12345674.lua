@@ -48,15 +48,15 @@ end
 function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
     local g=Duel.GetMatchingGroup(s.filter,tp,LOCATION_MZONE,0,nil)
 	local ct=g:GetClassCount(Card.GetCode)
-	if chk==0 then return ct>0 and Duel.GetFieldGroupCount(tp,0,LOCATION_DECK)>=ct 
-		and Duel.GetDecktopGroup(1-tp,ct):FilterCount(Card.IsAbleToRemove,nil)==ct end
-	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,ct,1-tp,LOCATION_DECK)
+	if chk==0 then return ct>0 and Duel.GetFieldGroupCount(tp,0,LOCATION_DECK)>=ct*2
+		and Duel.GetDecktopGroup(1-tp,ct*2):FilterCount(Card.IsAbleToRemove,nil)==ct*2 end
+	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,ct*2,1-tp,LOCATION_DECK)
 end
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(s.filter,tp,LOCATION_MZONE,0,nil)
 	local ct=g:GetClassCount(Card.GetCode)
-	local g=Duel.GetDecktopGroup(1-tp,ct)
-	if #g==ct then
+	local g=Duel.GetDecktopGroup(1-tp,ct*2)
+	if #g==ct*2 then
 		Duel.DisableShuffleCheck()
 		Duel.Remove(g,POS_FACEDOWN,REASON_EFFECT)
 	end
