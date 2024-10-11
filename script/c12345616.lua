@@ -1,9 +1,10 @@
--- Fusion Monster Script
-local s, id = GetID()
+--Super Fusion God
+local s,id=GetID()
 function s.initial_effect(c)
   -- Fusion material requirement
   c:EnableReviveLimit()
-  Fusion.AddProcMixN(c,true,true,s.ffilter,12)
+  -- Adjust Fusion procedure to better handle specific Fusion requirements
+  Fusion.AddProcMixN(c, true, true, s.ffilter, 3)
 
   -- Cannot be Special Summon negated
   local e0 = Effect.CreateEffect(c)
@@ -91,7 +92,7 @@ function s.initial_effect(c)
   e13:SetTargetRange(1, 0)
   e13:SetValue(1)
   c:RegisterEffect(e13)
-  
+
   local e14 = Effect.CreateEffect(c)
   e14:SetType(EFFECT_TYPE_FIELD)
   e14:SetProperty(EFFECT_FLAG_PLAYER_TARGET + EFFECT_FLAG_CANNOT_DISABLE)
@@ -100,7 +101,7 @@ function s.initial_effect(c)
   e14:SetTargetRange(1, 0)
   e14:SetValue(1)
   c:RegisterEffect(e14)
-  
+
   local e15 = Effect.CreateEffect(c)
   e15:SetType(EFFECT_TYPE_FIELD)
   e15:SetProperty(EFFECT_FLAG_PLAYER_TARGET + EFFECT_FLAG_CANNOT_DISABLE)
@@ -109,7 +110,7 @@ function s.initial_effect(c)
   e15:SetTargetRange(1, 0)
   e15:SetValue(1)
   c:RegisterEffect(e15)
-  
+
   -- Special summon a monster from opponent's banish zone
   local e16 = Effect.CreateEffect(c)
   e16:SetType(EFFECT_TYPE_QUICK_O)
@@ -124,8 +125,9 @@ function s.initial_effect(c)
   c:RegisterEffect(e16)
 end
 
-function s.ffilter(c,fc,sub,mg,sg)
-  return c:IsCode(78371393) or (c:IsType(TYPE_MONSTER) and (not sg or not sg:IsExists(Card.IsLevel, 1, c:GetLevel())))
+function s.ffilter(c, fc, sub, mg)
+  -- Return true if the card matches the required fusion material
+  return c:IsType(TYPE_MONSTER)
 end
 
 function s.banishcon(e,tp,eg,ep,ev,re,r,rp)
@@ -147,8 +149,8 @@ function s.banishop(e,tp,eg,ep,ev,re,r,rp)
   Duel.Remove(g, POS_FACEUP, REASON_EFFECT)
 end
 
-function s.efilter(e, re)
-  return e:GetHandlerPlayer() ~= re:GetOwnerPlayer()
+function s.efilter(e,te)
+	return te:GetOwner()~=e:GetOwner()
 end
 
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
@@ -187,13 +189,13 @@ function s.banishop2(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.ss_filter(c)
-  return c:IsType(TYPE_MONSTER)
+  return c:IsType(TYPE_MONSTER) and c:IsSummonableCard()
 end
 
 function s.ss_target(e,tp,eg,ep,ev,re,r,rp,chk)
-  if chk==0 then return Duel.IsExistingMatchingCard(s.ss_filter,tp,0,LOCATION_REMOVED,1,nil) end
+  if chk==0 then return Duel.IsExistingMatchingCard(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,1,nil) end
   Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-  local g = Duel.GetMatchingGroup(s.ss_filter,tp,0,LOCATION_REMOVED,nil)
+  local g = Duel.GetMatchingGroup(s.ss_filter,tp,0,LOCATION_GRAVE+LOCATION_REMOVED,nil)
   local tc = g:Select(tp,1,1,nil):GetFirst()
   Duel.SetTargetCard(tc)
   Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, tc, 1, 0, 0)
