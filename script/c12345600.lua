@@ -12,7 +12,8 @@ function s.initial_effect(c)
 	e2:SetCode(EFFECT_IMMUNE_EFFECT)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
-	e2:SetTarget(s.efffilter)
+	e2:SetTarget(aux.TargetBoolFunction(Card.IsNonEffectMonster))
+	e2:SetValue(s.efilter)
 	c:RegisterEffect(e2)
 	--Wyrm Effect Monsters cannot be destroyed by your card effects while controlling a non-Effect Monster
 	local e3=Effect.CreateEffect(c)
@@ -46,47 +47,34 @@ function s.initial_effect(c)
 	e5:SetTarget(s.negtg)
 	e5:SetOperation(s.negop)
 	c:RegisterEffect(e5)
-	--Draw 2 cards
-	local e6=Effect.CreateEffect(c)
-	e6:SetDescription(aux.Stringid(id,2))
-	e6:SetCategory(CATEGORY_DRAW)
-	e6:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-	e6:SetCode(EVENT_SUMMON_SUCCESS)
-	e6:SetProperty(EFFECT_FLAG_DELAY)
-	e6:SetRange(LOCATION_FZONE)
-	e6:SetCountLimit(1,id+200)
-	e6:SetCondition(s.drcon)
-	e6:SetTarget(s.drtg)
-	e6:SetOperation(s.drop)
-	c:RegisterEffect(e6)
-	local e7=e6:Clone()
-	e7:SetCode(EVENT_SPSUMMON_SUCCESS)
-	c:RegisterEffect(e7)
 	--Tribute 1 Wyrm, destroy 1 opponent's card
-	local e8=Effect.CreateEffect(c)
-	e8:SetDescription(aux.Stringid(id,3))
-	e8:SetCategory(CATEGORY_DESTROY)
-	e8:SetType(EFFECT_TYPE_IGNITION)
-	e8:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	e8:SetRange(LOCATION_FZONE)
-	e8:SetCountLimit(1,id+300)
-	e8:SetCost(s.descost)
-	e8:SetTarget(s.destg)
-	e8:SetOperation(s.desop)
-	c:RegisterEffect(e8)
+	local e6=Effect.CreateEffect(c)
+	e6:SetDescription(aux.Stringid(id,3))
+	e6:SetCategory(CATEGORY_DESTROY)
+	e6:SetType(EFFECT_TYPE_IGNITION)
+	e6:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e6:SetRange(LOCATION_FZONE)
+	e6:SetCountLimit(1,id+300)
+	e6:SetCost(s.descost)
+	e6:SetTarget(s.destg)
+	e6:SetOperation(s.desop)
+	c:RegisterEffect(e6)
 end
 
---Non-effect monsters unaffected by card effects
-function s.efffilter(e,c)
-	return c:IsType(TYPE_NORMAL) and c:IsFaceup()
+-- All non-Effect Monsters on the field are unaffected by card effects
+function s.efilter(e,te)
+	return true
+end
+
+
+-- Condition: Control a face-up non-Effect Monster
+function s.indcon(e)
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsNonEffectMonster),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
 
 --Wyrm Effect Monsters cannot be destroyed by your card effects
-function s.indcon(e)
-	return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsType,TYPE_NORMAL),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
-end
 function s.indtg(e,c)
-	return c:IsRace(RACE_WYRM) and c:IsType(TYPE_EFFECT)
+    return c:IsRace(RACE_WYRM) and c:IsType(TYPE_EFFECT)
 end
 
 --Add "Tenyi" or card mentioning it
@@ -108,7 +96,7 @@ end
 
 --Negate and destroy condition
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	return ep~=tp and Duel.IsChainNegatable(ev) and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsType,TYPE_NORMAL),tp,LOCATION_MZONE,0,1,nil)
+	return ep~=tp and Duel.IsChainNegatable(ev) and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsNonEffectMonster),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
@@ -121,22 +109,6 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
-end
-
---Draw condition
-function s.drfilter(c,tp)
-	return not c:IsSummonPlayer(tp) and c:IsType(TYPE_EFFECT) and c:IsFaceup()
-end
-function s.drcon(e,tp,eg,ep,ev,re,r,rp)
-	return eg:IsExists(s.drfilter,1,nil,tp)
-		and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_MZONE,0,1,nil)
-end
-function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-end
-function s.drop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Draw(tp,2,REASON_EFFECT)
 end
 
 --Tribute 1 Wyrm, destroy 1 card

@@ -203,8 +203,12 @@ function s.repval(e, c)
     return true
 end
 
+function s.sunvinefilter(c)
+    return c:IsSetCard(0x574) or c:IsSetCard(0x575) or c:IsSetCard(0x4157) or c:IsSetCard(0xc9)
+end
+
 function s.drcon(e,tp,eg,ep,ev,re,r,rp)
-	return ep==tp and ev>0
+	return ep==tp and ev>0 and not Duel.IsExistingMatchingCard(s.sunvinefilter,tp,LOCATION_MZONE,0,1,nil)
 end
 
 function s.drop(e,tp,eg,ep,ev,re,r,rp)
@@ -216,7 +220,7 @@ function s.lpcon(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.lpop(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_ONFIELD,0,1,nil,511009675) then	
+	if Duel.IsExistingMatchingCard(s.sunvinefilter,tp,LOCATION_MZONE,0,1,nil) then	
 		local ct=Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
 		local current_lp = Duel.GetLP(tp)
 		Duel.SetLP(tp, current_lp + ct*500)

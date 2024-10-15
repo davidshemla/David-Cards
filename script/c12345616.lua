@@ -4,7 +4,7 @@ function s.initial_effect(c)
   -- Fusion material requirement
   c:EnableReviveLimit()
   -- Adjust Fusion procedure to better handle specific Fusion requirements
-  Fusion.AddProcMixN(c, true, true, s.ffilter, 3)
+  Fusion.AddProcMix(c,true,true,CARD_NEOS,78371393)
 
   -- Cannot be Special Summon negated
   local e0 = Effect.CreateEffect(c)
@@ -124,12 +124,8 @@ function s.initial_effect(c)
   e16:SetOperation(s.ss_operation)
   c:RegisterEffect(e16)
 end
-
-function s.ffilter(c, fc, sub, mg)
-  -- Return true if the card matches the required fusion material
-  return c:IsType(TYPE_MONSTER)
-end
-
+s.material_setcode={0x8}
+s.material={CARD_NEOS}
 function s.banishcon(e,tp,eg,ep,ev,re,r,rp)
   return e:GetHandler():IsSummonType(SUMMON_TYPE_SPECIAL)
 end
@@ -205,5 +201,84 @@ function s.ss_operation(e,tp,eg,ep,ev,re,r,rp)
   local tc = Duel.GetFirstTarget()
   if tc and tc:IsRelateToEffect(e) then
     Duel.SpecialSummon(tc, 0, 1-tp, 1-tp, true, false, POS_FACEUP_ATTACK)
+    
+    -- Apply the following restrictions to the summoned monster:
+    -- 1. Effects are Negated
+    local e1=Effect.CreateEffect(e:GetHandler())
+    e1:SetType(EFFECT_TYPE_SINGLE)
+    e1:SetCode(EFFECT_DISABLE)
+    e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e1,true)
+
+    local e2=Effect.CreateEffect(e:GetHandler())
+    e2:SetType(EFFECT_TYPE_SINGLE)
+    e2:SetCode(EFFECT_DISABLE_EFFECT)
+    e2:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e2,true)
+
+    -- 2. Cannot Activate Its Effects
+    local e3=Effect.CreateEffect(e:GetHandler())
+    e3:SetType(EFFECT_TYPE_SINGLE)
+    e3:SetCode(EFFECT_CANNOT_TRIGGER)
+    e3:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e3,true)
+
+    -- 3. Must Attack
+    local e4=Effect.CreateEffect(e:GetHandler())
+    e4:SetType(EFFECT_TYPE_SINGLE)
+    e4:SetCode(EFFECT_MUST_ATTACK)
+    e4:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e4,true)
+
+    -- 4. Double its ATK
+    local e5=Effect.CreateEffect(e:GetHandler())
+    e5:SetType(EFFECT_TYPE_SINGLE)
+    e5:SetCode(EFFECT_SET_ATTACK_FINAL)
+    e5:SetValue(tc:GetAttack()*2)
+    e5:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e5,true)
+
+    -- 5. Cannot Change Battle Position
+    local e6=Effect.CreateEffect(e:GetHandler())
+    e6:SetType(EFFECT_TYPE_SINGLE)
+    e6:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
+    e6:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e6,true)
+
+    -- 6. Cannot be Used as Tribute
+    local e7=Effect.CreateEffect(e:GetHandler())
+    e7:SetType(EFFECT_TYPE_SINGLE)
+    e7:SetCode(EFFECT_UNRELEASABLE_SUM)
+    e7:SetValue(1)
+    e7:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e7,true)
+
+    -- 7. Cannot be Used as Fusion, Synchro, Xyz, or Link Material
+    local e8=Effect.CreateEffect(e:GetHandler())
+    e8:SetType(EFFECT_TYPE_SINGLE)
+    e8:SetProperty(EFFECT_FLAG_CANNOT_DISABLE + EFFECT_FLAG_UNCOPYABLE)
+    e8:SetCode(EFFECT_CANNOT_BE_FUSION_MATERIAL)
+    e8:SetValue(1)
+    e8:SetReset(RESET_EVENT+RESETS_STANDARD)
+    tc:RegisterEffect(e8,true)
+
+    local e9=e8:Clone()
+    e9:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
+    tc:RegisterEffect(e9,true)
+
+    local e10=e8:Clone()
+    e10:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
+    tc:RegisterEffect(e10,true)
+
+    local e11=e8:Clone()
+    e11:SetCode(EFFECT_CANNOT_BE_LINK_MATERIAL)
+    tc:RegisterEffect(e11,true)
+
+    -- Ensure restrictions persist if the monster leaves the field
+    local e12=Effect.CreateEffect(e:GetHandler())
+    e12:SetType(EFFECT_TYPE_SINGLE)
+    e12:SetCode(EFFECT_CANNOT_TRIGGER)
+    e12:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_TURN_SET)
+    tc:RegisterEffect(e12,true)
   end
 end
