@@ -46,16 +46,12 @@ end
 
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
     -- Check if the activated card has the flag
-    return re:GetHandler():GetFlagEffect(id)>0 and re:GetHandler()==e:GetLabelObject()
+    return re:GetHandler():GetFlagEffect(id) > 0
 end
 
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
-    local tc=e:GetLabelObject()
     
-    -- Reset the flag after the declared card activates its effect
-    tc:ResetFlagEffect(id)
-
     -- Return the banished card to the hand if it's still banished
     if c:IsLocation(LOCATION_REMOVED) then
         Duel.SendtoHand(c,nil,REASON_EFFECT)
