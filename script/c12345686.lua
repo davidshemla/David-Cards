@@ -65,12 +65,11 @@ function s.initial_effect(c)
     c:RegisterEffect(e6)
 
     -- Optional detach replacement effect
-    local e7=Effect.CreateEffect(c)
-    e7:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    local e7 = Effect.CreateEffect(c)
+    e7:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
     e7:SetCode(EFFECT_OVERLAY_REMOVE_REPLACE)
     e7:SetRange(LOCATION_FZONE)
-    e7:SetTargetRange(LOCATION_MZONE,0)
-    e7:SetCondition(s.xyzremovecon)
+    e7:SetTarget(s.xyzremove)
     e7:SetValue(s.xyzremovevalue)
     c:RegisterEffect(e7)
 end
@@ -183,15 +182,24 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 -- Optional detach replacement effect
-function s.xyzremovecon(e,tp,eg,ep,ev,re,r,rp)
-    local tc=eg:GetFirst()
-    return tc and tc:IsFaceup() and tc:IsSetCard(0xf7) and tc:IsType(TYPE_XYZ)
+function s.xyzremove(e,tp,eg,ep,ev,re,r,rp)
+    -- Check if the effect is being activated and if it involves an Xyz monster
+    if re and re:GetHandler():IsSetCard(0xf7) and re:GetHandler():IsType(TYPE_XYZ) then
+        return true -- Allow the detachment to be replaced
+    end
+    return false
 end
 
 function s.xyzremovevalue(e,re,rp)
     local tp=e:GetOwnerPlayer()
-    if Duel.SelectYesNo(tp,aux.Stringid(id,4)) then
-        return tp~=rp -- Detach optional, return true if it's not the player who activated the effect
+    local rc=re:GetHandler()  -- Get the card that activated the effect
+
+    -- Check if the card is a face-up "Lyrilusc" Xyz monster
+    if rc:IsFaceup() and rc:IsSetCard(0xf7) and rc:IsType(TYPE_XYZ) then
+        -- Prompt the player with a Yes/No option
+        if Duel.SelectYesNo(tp,aux.Stringid(id,4)) then
+            return true -- Player opts not to detach
+        end
     end
-    return false -- Do not detach if the player chooses no
+    return false -- Player chooses to detach as normal
 end
