@@ -177,12 +177,12 @@ function s.reptg(e, tp, eg, ep, ev, re, r, rp, chk)
 	return true
 end
 	
--- Replacement effect: Increase ATK and DEF by 10% instead of being sent to the GY
+-- Replacement effect: Increase ATK and DEF by 20% instead of being sent to the GY
 function s.repval(e, c)
     local atk = c:GetAttack()
     local def = c:GetDefense()
-    local new_atk = math.floor(atk * 1.1)
-    local new_def = math.floor(def * 1.1)
+    local new_atk = math.floor(atk * 1.2)
+    local new_def = math.floor(def * 1.2)
     
     -- Increase ATK
     local e1 = Effect.CreateEffect(e:GetHandler())
