@@ -24,7 +24,7 @@ function s.initial_effect(c)
     e3:SetCategory(CATEGORY_TOHAND)
     e3:SetType(EFFECT_TYPE_IGNITION)
     e3:SetRange(LOCATION_FZONE)
-    e3:SetCountLimit(1)
+    e3:SetCountLimit(1,id)
     e3:SetTarget(s.thtg)
     e3:SetOperation(s.thop)
     c:RegisterEffect(e3)
@@ -43,6 +43,7 @@ function s.initial_effect(c)
     local e5=Effect.CreateEffect(c)
     e5:SetDescription(aux.Stringid(id,1))
     e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e5:SetCountLimit(1,id+1)
     e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
     e5:SetCode(EVENT_TO_GRAVE)
     e5:SetRange(LOCATION_FZONE)
@@ -84,22 +85,44 @@ end
 function s.cfilter(c,tp)
     return c:IsSetCard(0x103) and c:IsControler(tp) and c:IsPreviousLocation(LOCATION_ONFIELD)
 end
+
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
     return eg:IsExists(s.cfilter,1,nil,tp)
 end
+
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-        and Duel.IsExistingMatchingCard(aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
+    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
+
+    local g=eg:Filter(s.cfilter,nil,tp)
+    if #g==0 then return false end
+
+    -- If there are 2 or more monsters, we need to target one of them
+    if #g > 1 then
+        Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
+    end
+
+    return true
 end
+
 function s.spfilter(c,e,tp)
     return c:IsSetCard(0x103) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
+
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
     if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-    local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-    if #g>0 then
+
+    local g=eg:Filter(s.cfilter,nil,tp)
+    if #g > 1 then
+        Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+        g=g:Select(tp,1,1,nil)
+    elseif #g == 1 then
+        -- If there's only one, we can directly select that one
+        g=g:Select(tp,1,1,nil)
+    else
+        return
+    end
+    
+    if #g > 0 then
         Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
     end
 end
