@@ -163,12 +163,7 @@ end
 
 function s.repfilter(c,tp)
     return c:IsFaceup() and c:IsControler(tp) and c:IsLocation(LOCATION_MZONE)
-    and (c:IsReason(REASON_BATTLE) or (c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()~=tp))
-end
-
-function s.repcon(e,tp,eg,ep,ev,re,r,rp)
-    -- Check if the destruction is caused by your opponent and it's your monster on the field
-    return re and re:GetOwnerPlayer()~=tp
+    and (c:IsReason(REASON_BATTLE) or c:IsReason(REASON_EFFECT)) and c:GetReasonPlayer()~=tp
 end
 
 -- Target function: Check if any monsters match the filter to apply the replacement effect
@@ -179,6 +174,7 @@ end
 	
 -- Replacement effect: Increase ATK and DEF by 20% instead of being sent to the GY
 function s.repval(e, c)
+	if c:GetControler() ~= e:GetHandlerPlayer() then return false end
     local atk = c:GetAttack()
     local def = c:GetDefense()
     local new_atk = math.floor(atk * 1.2)
