@@ -57,6 +57,14 @@ function s.initial_effect(c)
 	e7:SetTarget(s.tgtg)
 	e7:SetValue(aux.tgoval)
 	c:RegisterEffect(e7)
+	-- All cards in your Deck are treated as Rock type
+	local e8=Effect.CreateEffect(c)
+	e8:SetType(EFFECT_TYPE_FIELD)
+	e8:SetCode(EFFECT_ADD_RACE)
+	e8:SetRange(LOCATION_FZONE)
+	e8:SetTargetRange(LOCATION_DECK,0)
+	e8:SetValue(RACE_ROCK) -- Treat all cards in your Deck as Rock type
+	c:RegisterEffect(e8)
 end
 s.listed_series={0x140}
 
