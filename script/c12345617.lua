@@ -61,6 +61,12 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
             Duel.SpecialSummonStep(tc,0,tp,field_tp,true,false,POS_FACEUP)
         end
         tc:CompleteProcedure()
+
+        if field_tp == tp then
+            ft1 = ft1 - 1
+        else
+            ft2 = ft2 - 1
+        end
     end
     Duel.SpecialSummonComplete()
 end

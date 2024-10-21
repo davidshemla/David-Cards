@@ -15,7 +15,7 @@ function s.initial_effect(c)
 	e2:SetCondition(s.desrepcon)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
-	--Halves battle damage
+	--Reduces battle damage to 0
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,0))
 	e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
@@ -24,11 +24,12 @@ function s.initial_effect(c)
 	e3:SetCondition(s.rdcon)
 	e3:SetOperation(s.rdop)
 	c:RegisterEffect(e3)
-	--Negate Spell/Trap activation
+	--Negate opponent activation
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,1))
 	e4:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
 	e4:SetType(EFFECT_TYPE_QUICK_O)
+	e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
 	e4:SetCode(EVENT_CHAINING)
 	e4:SetRange(LOCATION_FZONE)
 	e4:SetCondition(s.discon)
@@ -78,7 +79,7 @@ end
 function s.rdop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.SelectEffectYesNo(tp,e:GetHandler()) then
 		Duel.Hint(HINT_CARD,1-tp,id)
-		Duel.ChangeBattleDamage(tp,math.floor(ev/2))
+		Duel.ChangeBattleDamage(tp,0)  -- Changes battle damage to 0 instead of halving
 		e:GetHandler():RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
