@@ -1,4 +1,4 @@
---Constellar Hall
+--Constellar tellarknight Hall
 local s,id=GetID()
 function s.initial_effect(c)
     --Activate
@@ -27,7 +27,7 @@ function s.initial_effect(c)
     e3:SetValue(s.countlimit)
     c:RegisterEffect(e3)
 
-    --Send 2 Constellar cards from deck to GY
+    --Send 2 Constellar or tellarknight cards from deck to GY
     local e4=Effect.CreateEffect(c)
     e4:SetDescription(aux.Stringid(id,1))
     e4:SetType(EFFECT_TYPE_IGNITION)
@@ -59,9 +59,18 @@ function s.initial_effect(c)
     e6:SetCondition(s.xyzlvcon)
     e6:SetOperation(s.xyzlvop)
     c:RegisterEffect(e6)
+
+    -- Optional detach replacement effect
+    local e7 = Effect.CreateEffect(c)
+    e7:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)
+    e7:SetCode(EFFECT_OVERLAY_REMOVE_REPLACE)
+    e7:SetRange(LOCATION_FZONE)
+    e7:SetTarget(s.xyzremove)
+    e7:SetValue(s.xyzremovevalue)
+    c:RegisterEffect(e7)
 end
 
-s.listed_series={0x53}
+s.listed_series={0x53,0x9c}
 
 function s.ntcon(e,c,minc)
     if c==nil then return true end
@@ -73,7 +82,7 @@ function s.countlimit(e)
 end
 
 function s.gyfilter(c)
-    return c:IsSetCard(0x53) and c:IsAbleToGrave()
+    return (c:IsSetCard(0x53) or c:IsSetCard(0x9c)) and c:IsAbleToGrave()
 end
 
 function s.gytg(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -90,7 +99,7 @@ function s.gyop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.negfilter(c)
-    return c:IsFaceup() and c:IsSetCard(0x53)
+    return c:IsFaceup() and (c:IsSetCard(0x53) or c:IsSetCard(0x9c))
 end
 
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
@@ -114,7 +123,7 @@ end
 
 function s.xyzlvcon(e,tp,eg,ep,ev,re,r,rp)
     local tc=eg:GetFirst()
-    return tc:IsFaceup() and tc:IsSetCard(0x53)
+    return tc:IsFaceup() and (tc:IsSetCard(0x53) or tc:IsSetCard(0x9c))
 end
 
 function s.xyzlvop(e,tp,eg,ep,ev,re,r,rp)
@@ -145,4 +154,27 @@ function s.xyzlvop(e,tp,eg,ep,ev,re,r,rp)
     local e7=e1:Clone()
     e7:SetValue(7)
     tc:RegisterEffect(e7)
+end
+
+-- Optional detach replacement effect
+function s.xyzremove(e,tp,eg,ep,ev,re,r,rp)
+    -- Check if the effect is being activated and if it involves an Xyz monster
+    if re and (re:GetHandler():IsSetCard(0x53) or re:GetHandler():IsSetCard(0x9c)) and re:GetHandler():IsType(TYPE_XYZ) then
+        return true -- Allow the detachment to be replaced
+    end
+    return false
+end
+
+function s.xyzremovevalue(e,re,rp)
+    local tp=e:GetOwnerPlayer()
+    local rc=re:GetHandler()  -- Get the card that activated the effect
+
+    -- Check if the card is a face-up "Constellar or tellarknight" Xyz monster
+    if rc:IsFaceup() and (rc:IsSetCard(0x53) or rc:IsSetCard(0x9c)) and rc:IsType(TYPE_XYZ) then
+        -- Prompt the player with a Yes/No option
+        if Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
+            return true -- Player opts not to detach
+        end
+    end
+    return false -- Player chooses to detach as normal
 end
