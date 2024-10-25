@@ -1,7 +1,4 @@
---バトルドローン・ジェネラル
 --Battledrone General
---fixed by Larry126
---cleaned up by MLD
 Duel.LoadScript("c420.lua")
 local s,id=GetID()
 function s.initial_effect(c)
@@ -19,41 +16,29 @@ function s.initial_effect(c)
     e1:SetTarget(s.sptg)
     e1:SetOperation(s.spop)
     c:RegisterEffect(e1)
-    -- Damage
+    --damage per Drone counter
     local e2=Effect.CreateEffect(c)
-    e2:SetDescription(aux.Stringid(id, 1))
+    e2:SetDescription(aux.Stringid(id,1))
     e2:SetCategory(CATEGORY_DAMAGE)
-    e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-    e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+    e2:SetType(EFFECT_TYPE_IGNITION)
     e2:SetRange(LOCATION_MZONE)
-    e2:SetCode(EVENT_BATTLE_DAMAGE)
+    e2:SetCountLimit(1)
     e2:SetCondition(s.damcon)
-    e2:SetCost(s.damcost)
-    e2:SetTarget(s.damtg)
-    e2:SetOperation(s.damop)
+    e2:SetTarget(s.damagetg)
+    e2:SetOperation(s.damageop)
     c:RegisterEffect(e2)
-    --direct atk
+    --destroy cards
     local e3=Effect.CreateEffect(c)
-    e3:SetDescription(aux.Stringid(id, 2))
-    e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e3:SetDescription(aux.Stringid(id,2))
+    e3:SetCategory(CATEGORY_DESTROY)
     e3:SetType(EFFECT_TYPE_IGNITION)
+	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e3:SetRange(LOCATION_MZONE)
     e3:SetCountLimit(1)
-    e3:SetCondition(s.condition)
-    e3:SetTarget(s.target)
-    e3:SetOperation(s.operation)
+    e3:SetCondition(s.descon)
+    e3:SetTarget(s.destg)
+    e3:SetOperation(s.desop)
     c:RegisterEffect(e3)
-    --damage once per turn
-    local e4=Effect.CreateEffect(c)
-    e4:SetDescription(aux.Stringid(id, 3))
-    e4:SetCategory(CATEGORY_DAMAGE)
-    e4:SetType(EFFECT_TYPE_IGNITION)
-    e4:SetRange(LOCATION_MZONE)
-    e4:SetCountLimit(1)
-    e4:SetCondition(s.damcon2)
-    e4:SetTarget(s.damagetg)
-    e4:SetOperation(s.damageop)
-    c:RegisterEffect(e4)
 end
 function s.spfilter(c,e,tp,zone)
     return c:IsDrone() and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,tp,zone)
@@ -76,52 +61,6 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
-    if ep==tp then return false end
-    local rc=eg:GetFirst()
-    e:SetLabelObject(eg:GetFirst())
-    return rc:IsControler(tp) and rc:IsDrone() and Duel.GetAttackTarget()==nil
-end
-function s.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
-    local rc=e:GetLabelObject()
-    if chk==0 then return rc and rc:IsReleasable() end
-    e:SetLabel(rc:GetAttack())
-    Duel.Release(rc,REASON_COST)
-end
-function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return true end
-    Duel.SetTargetPlayer(1-tp)
-    Duel.SetTargetParam(e:GetLabel())
-    Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,tp,ev)
-end
-function s.damop(e,tp,eg,ep,ev,re,r,rp)
-    local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-    Duel.Damage(p,d,REASON_EFFECT)
-end
-
-function s.condition(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.GetCurrentPhase()==PHASE_MAIN1
-end
-function s.filter(c)
-    return c:IsFaceup() and c:IsDrone() and c:IsLevelBelow(4) and c:IsAttackBelow(1000) and not c:IsHasEffect(EFFECT_DIRECT_ATTACK)
-end
-function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-    if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.filter(chkc) end
-    if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,0,1,nil) end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-    Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,0,1,1,nil)
-end
-function s.operation(e,tp,eg,ep,ev,re,r,rp)
-    local tc=Duel.GetFirstTarget()
-    if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-        local e1=Effect.CreateEffect(e:GetHandler())
-        e1:SetType(EFFECT_TYPE_SINGLE)
-        e1:SetCode(EFFECT_DIRECT_ATTACK)
-        e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
-        tc:RegisterEffect(e1)
-    end
-end
-
-function s.damcon2(e,tp,eg,ep,ev,re,r,rp)
     return Duel.GetCounter(tp,1,0,0x581) > 0
 end
 
@@ -136,4 +75,24 @@ end
 function s.damageop(e,tp,eg,ep,ev,re,r,rp)
     local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
     Duel.Damage(p,d,REASON_EFFECT)
+end
+
+function s.descon(e,tp,eg,ep,ev,re,r,rp)
+    return Duel.GetCounter(tp,1,0,0x581) > 0
+end
+
+function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+    local ct=Duel.GetCounter(tp,1,0,0x581)
+    if chkc then return chkc:IsLocation(LOCATION_ONFIELD) and chkc:IsControler(1-tp) end
+    if chk==0 then return ct>0 and Duel.IsExistingTarget(Card.IsDestructable,tp,0,LOCATION_ONFIELD,1,nil) end
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+    local g=Duel.SelectTarget(tp,Card.IsDestructable,tp,0,LOCATION_ONFIELD,1,ct,nil)
+    Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,#g,0,0)
+end
+
+function s.desop(e,tp,eg,ep,ev,re,r,rp)
+    local g=Duel.GetTargetCards(e)
+    if #g>0 then
+        Duel.Destroy(g,REASON_EFFECT)
+    end
 end
