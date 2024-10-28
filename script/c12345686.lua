@@ -72,6 +72,15 @@ function s.initial_effect(c)
     e7:SetTarget(s.xyzremove)
     e7:SetValue(s.xyzremovevalue)
     c:RegisterEffect(e7)
+
+    -- Gain ATK and DEF before damage calculation
+    local e8=Effect.CreateEffect(c)
+    e8:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+    e8:SetCode(EVENT_PRE_DAMAGE_CALCULATE)
+    e8:SetRange(LOCATION_FZONE)
+    e8:SetCondition(s.atkcon)
+    e8:SetOperation(s.atkop)
+    c:RegisterEffect(e8)
 end
 
 -- Cannot be targeted filter
@@ -202,4 +211,24 @@ function s.xyzremovevalue(e,re,rp)
         end
     end
     return false -- Player chooses to detach as normal
+end
+
+function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
+    local tc=Duel.GetAttacker()
+    return tc:IsControler(tp) and tc:IsSetCard(0xf7) and tc:IsType(TYPE_XYZ)
+end
+
+function s.atkop(e,tp,eg,ep,ev,re,r,rp)
+    local tc=Duel.GetAttacker()
+    if tc and tc:IsRelateToBattle() then
+        local e1=Effect.CreateEffect(e:GetHandler())
+        e1:SetType(EFFECT_TYPE_SINGLE)
+        e1:SetCode(EFFECT_UPDATE_ATTACK)
+        e1:SetValue(300)
+        e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+        tc:RegisterEffect(e1)
+        local e2=e1:Clone()
+        e2:SetCode(EFFECT_UPDATE_DEFENSE)
+        tc:RegisterEffect(e2)
+    end
 end

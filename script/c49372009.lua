@@ -14,14 +14,6 @@ function s.initial_effect(c)
     e1:SetTarget(s.sptg)
     e1:SetOperation(s.spop)
     c:RegisterEffect(e1)
-
-    -- Return to Extra Deck and Special Summon
-    local e2=Effect.CreateEffect(c)
-    e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-    e2:SetRange(LOCATION_MZONE)
-    e2:SetCode(EVENT_PHASE+PHASE_END)
-    e2:SetOperation(s.retop)
-    c:RegisterEffect(e2)
 end
 
 s.listed_series={0x577}
@@ -52,18 +44,14 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
         Duel.ShuffleDeck(1-tp)
         Duel.ShuffleHand(1-tp)
     end
-end
-
-function s.retop(e,tp,eg,ep,ev,re,r,rp)
+    -- Immediately return to Extra Deck and Special Summon from Extra Deck
     local c=e:GetHandler()
-    if c:IsFaceup() then
+    if c:IsLocation(LOCATION_MZONE) then
         Duel.SendtoDeck(c,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-        if c:IsLocation(LOCATION_EXTRA) and Duel.GetLocationCountFromEx(tp)>0
-            and Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_EXTRA,0,1,nil,49372007) then
-            local sc=Duel.SelectMatchingCard(tp,Card.IsCode,tp,LOCATION_EXTRA,0,1,1,nil,49372007):GetFirst()
-            if sc then
-                Duel.SpecialSummon(sc,0,tp,tp,false,false,POS_FACEUP)
-            end
+        Duel.ShuffleDeck(tp)
+        local sc=Duel.GetFirstMatchingCard(Card.IsCode,tp,LOCATION_EXTRA,0,nil,49372007)
+        if sc then
+            Duel.SpecialSummon(sc,0,tp,tp,false,false,POS_FACEUP)
         end
     end
 end
