@@ -45,7 +45,7 @@ end
 function s.excavate_op(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetDecktopGroup(tp,5)
 	Duel.ConfirmDecktop(tp,5)
-	local ct=g:FilterCount(Card.IsRace,nil,RACE_ROCK)
+	local ct=g:FilterCount(Card.IsSetCard, nil, 0x140)
 	if ct>0 then
 		local tg=Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,nil) -- Get cards in opponent's GY
 		if #tg>0 then

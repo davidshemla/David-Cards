@@ -4,10 +4,10 @@ local s,id=GetID()
 function s.initial_effect(c)
 	c:EnableReviveLimit()
 	Synchro.AddProcedure(c,nil,1,1,Synchro.NonTuner(nil),1,99)
-	--Excavate and add to hand
+	--Excavate and negate
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_TOHAND)
+	e1:SetCategory(CATEGORY_NEGATE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetCountLimit(1,id)
 	e1:SetRange(LOCATION_MZONE)
@@ -40,7 +40,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	Duel.ConfirmDecktop(tp,5)
 	local hg=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_ONFIELD,nil) -- Get face-up cards
 	local g=Duel.GetDecktopGroup(tp,5)
-	local ct=math.min(#hg,g:FilterCount(Card.IsRace,nil,RACE_ROCK))
+	local ct=g:FilterCount(Card.IsSetCard, nil, 0x140)
 	if ct>0 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
 		local sg=hg:Select(tp,1,ct,nil)
 		Duel.HintSelection(sg)

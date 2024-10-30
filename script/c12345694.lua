@@ -58,7 +58,7 @@ function s.excavate_operation(e,tp,eg,ep,ev,re,r,rp)
     if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)<5 then return end
     Duel.ConfirmDecktop(tp,5)
     local g=Duel.GetDecktopGroup(tp,5)
-    local rg=g:Filter(Card.IsRace,nil,RACE_ROCK)
+    local rg=g:Filter(Card.IsSetCard, nil, 0x140)
     local count=rg:GetCount()
     if count>0 then
         e:GetHandler():AddCounter(0x1036,count) -- Change the counter type if necessary

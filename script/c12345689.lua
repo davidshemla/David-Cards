@@ -57,6 +57,23 @@ function s.initial_effect(c)
 	e7:SetTarget(s.tgtg)
 	e7:SetValue(aux.tgoval)
 	c:RegisterEffect(e7)
+	-- Send 1 Tuner and 1 non-Tuner from Deck to GY; Special Summon 1 Adamancipator Synchro
+	local e8=Effect.CreateEffect(c)
+	e8:SetDescription(aux.Stringid(id,2))
+	e8:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e8:SetType(EFFECT_TYPE_IGNITION)
+	e8:SetRange(LOCATION_FZONE)
+	e8:SetTarget(s.syntg2)
+	e8:SetOperation(s.synop2)
+	c:RegisterEffect(e8)
+	-- All cards in hand and Deck are also treated as "Adamancipator" cards
+	local e9=Effect.CreateEffect(c)
+	e9:SetType(EFFECT_TYPE_FIELD)
+	e9:SetCode(EFFECT_ADD_SETCODE)
+	e9:SetRange(LOCATION_FZONE)
+	e9:SetTargetRange(LOCATION_DECK,0)
+	e9:SetValue(0x140)
+	c:RegisterEffect(e9)
 end
 s.listed_series={0x140}
 
@@ -85,7 +102,7 @@ function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 
--- Target for Special Summoning an Adamancipator Synchro Monster
+-- Target for Special Summoning an Adamancipator Synchro Monster (e6)
 function s.syntg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		-- Check if you have 1 Tuner and 1 non-Tuner monster in the GY
@@ -107,7 +124,7 @@ function s.nonTunerFilter(c)
 	return c:IsType(TYPE_MONSTER) and not c:IsType(TYPE_TUNER)
 end
 
--- Operation for shuffling the materials and performing the Synchro Summon
+-- Operation for shuffling the materials and performing the Synchro Summon (e6)
 function s.synop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
@@ -122,6 +139,46 @@ function s.synop(e,tp,eg,ep,ev,re,r,rp)
 	-- Shuffle them back to the Deck
 	local g=Group.FromCards(tuner,nontuner)
 	if Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)==2 then
+		-- Special Summon 1 Adamancipator Synchro monster from the Extra Deck
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		local sc=Duel.SelectMatchingCard(tp,s.synfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp):GetFirst()
+		if sc then
+			Duel.SpecialSummon(sc,SUMMON_TYPE_SYNCHRO,tp,tp,false,false,POS_FACEUP)
+			sc:CompleteProcedure()
+		end
+	end
+end
+
+-- Target for sending from Deck and Special Summoning Adamancipator Synchro Monster (e8)
+function s.syntg2(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then
+		return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+			and Duel.IsExistingMatchingCard(s.tunerFilter,tp,LOCATION_DECK,0,1,nil)
+			and Duel.IsExistingMatchingCard(s.nonTunerFilter,tp,LOCATION_DECK,0,1,nil)
+			and Duel.IsExistingMatchingCard(s.synfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp)
+	end
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
+end
+
+-- Filter for Tuner monsters
+function s.tunerFilter(c)
+	return c:IsType(TYPE_TUNER) and c:IsAbleToGrave()
+end
+
+-- Operation for sending from Deck and Special Summoning Adamancipator Synchro Monster (e8)
+function s.synop2(e,tp,eg,ep,ev,re,r,rp)
+	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+
+	-- Select 1 Tuner and 1 non-Tuner monster from the Deck
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	local tuner=Duel.SelectMatchingCard(tp,s.tunerFilter,tp,LOCATION_DECK,0,1,1,nil):GetFirst()
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	local nontuner=Duel.SelectMatchingCard(tp,s.nonTunerFilter,tp,LOCATION_DECK,0,1,1,nil):GetFirst()
+	if not tuner or not nontuner then return end
+
+	-- Send them to the GY
+	local g=Group.FromCards(tuner,nontuner)
+	if Duel.SendtoGrave(g,REASON_EFFECT)==2 then
 		-- Special Summon 1 Adamancipator Synchro monster from the Extra Deck
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 		local sc=Duel.SelectMatchingCard(tp,s.synfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp):GetFirst()

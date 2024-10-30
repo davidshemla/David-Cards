@@ -41,7 +41,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	Duel.ConfirmDecktop(tp,5)
 	local hg=Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_ONFIELD,nil)
 	local g=Duel.GetDecktopGroup(tp,5)
-	local ct=math.min(#hg,g:FilterCount(Card.IsRace,nil,RACE_ROCK))
+	local ct=math.min(#hg,g:FilterCount(Card.IsSetCard, nil, 0x140))
 	if ct>0 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
 		local sg=hg:Select(tp,1,ct,nil)
