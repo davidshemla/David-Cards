@@ -143,6 +143,22 @@ function s.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e15:SetCondition(s.lookcon)
 	e15:SetOperation(s.lookop)
 	Duel.RegisterEffect(e15,tp)
+	-- Make effects activated by this card inactivatable and non-diseffectable
+	local e16=Effect.CreateEffect(c)
+	e16:SetType(EFFECT_TYPE_FIELD)
+	e16:SetCode(EFFECT_CANNOT_INACTIVATE)
+	e16:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e16:SetTargetRange(1,0)
+	e16:SetValue(s.effectfilter)
+	Duel.RegisterEffect(e16,tp)
+
+	local e17=Effect.CreateEffect(c)
+	e17:SetType(EFFECT_TYPE_FIELD)
+	e17:SetCode(EFFECT_CANNOT_DISEFFECT)
+	e17:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e17:SetTargetRange(1,0)
+	e17:SetValue(s.effectfilter)
+	Duel.RegisterEffect(e17,tp)
 end
 
 function s.atkcon(e)
@@ -277,4 +293,9 @@ function s.lookop(e,tp,eg,ep,ev,re,r,rp)
 		local token=Duel.CreateToken(tp,ac)
 		Duel.SendtoHand(token,nil,REASON_EFFECT)
 	end
+end
+
+function s.effectfilter(e,ct)
+	local te,tp,loc=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER,CHAININFO_TRIGGERING_LOCATION)
+	return tp==e:GetHandlerPlayer() and loc&LOCATION_ONFIELD~=0
 end
