@@ -1,4 +1,4 @@
---Ultimate Bamboo Sword
+-- 
 local s,id=GetID()
 function s.initial_effect(c)
     --Activate
@@ -41,12 +41,19 @@ function s.initial_effect(c)
     e5:SetRange(LOCATION_SZONE)
     e5:SetCode(EVENT_BATTLE_DAMAGE)
     e5:SetCondition(s.damcon)
+    e5:SetTarget(s.damtg)
     e5:SetOperation(s.damop)
     c:RegisterEffect(e5)
 end
 
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
-    return ep==1-tp and Duel.GetAttackTarget()==nil
+    return ep==1-tp
+end
+
+function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
+    local g=Duel.GetFieldGroup(tp,0,LOCATION_ONFIELD)
+	if chk==0 then return #g>0 end
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,#g,0,0)
 end
 
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
@@ -59,11 +66,11 @@ function s.damop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetCode(EFFECT_SKIP_DP)
 	e1:SetReset(RESET_PHASE+PHASE_DRAW+RESET_OPPO_TURN)
 	Duel.RegisterEffect(e1,tp)
-
-    -- Ask for confirmation to destroy opponent's cards
-    if Duel.SelectEffectYesNo(tp, e:GetHandler()) then
-        -- Destroy all cards your opponent controls
-        local sg=Duel.GetMatchingGroup(nil,tp,0,LOCATION_MZONE,nil)
-	    Duel.Destroy(sg,REASON_EFFECT)
+    
+    if Duel.SelectEffectYesNo(tp,aux.Stringid(id, 0)) then
+        local g=Duel.GetFieldGroup(tp,0,LOCATION_ONFIELD)
+	    if #g>0 then 
+            Duel.Destroy(g,REASON_EFFECT)
+        end
     end
 end
