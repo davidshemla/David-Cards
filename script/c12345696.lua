@@ -1,4 +1,4 @@
--- 
+--Ultimate Bamboo Sword
 local s,id=GetID()
 function s.initial_effect(c)
     --Activate
@@ -51,8 +51,8 @@ function s.damcon(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
-    local g=Duel.GetFieldGroup(tp,0,LOCATION_ONFIELD)
-	if chk==0 then return #g>0 end
+    if chk==0 then return true end
+    local g=Duel.GetFieldGroup(tp,0,LOCATION_ONFIELD+LOCATION_HAND)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,#g,0,0)
 end
 
@@ -67,9 +67,9 @@ function s.damop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_PHASE+PHASE_DRAW+RESET_OPPO_TURN)
 	Duel.RegisterEffect(e1,tp)
     
-    if Duel.SelectEffectYesNo(tp,aux.Stringid(id, 0)) then
-        local g=Duel.GetFieldGroup(tp,0,LOCATION_ONFIELD)
-	    if #g>0 then 
+    local g=Duel.GetFieldGroup(tp,0,LOCATION_ONFIELD+LOCATION_HAND)
+    if #g>0 then   
+        if Duel.SelectYesNo(tp,aux.Stringid(id, 0)) then
             Duel.Destroy(g,REASON_EFFECT)
         end
     end
