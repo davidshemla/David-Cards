@@ -238,8 +238,8 @@ if not SealedDuel then
 		
 		--treat as all monster types
 		if true then
-			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(4009,0)) 
-			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(4009,0)) 
+			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(id,0)) 
+			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(id,0)) 
 			local getrc=Card.GetRace
 			Card.GetRace=function(c)
 				if c:IsMonster() then return 0xfffffff end
@@ -264,8 +264,8 @@ if not SealedDuel then
 
 		-- Treat as all monster attributes
 		if true then
-			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(4009,1)) 
-			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(4009,1)) 
+			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(id,1)) 
+			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(id,1)) 
 			local getattr=Card.GetAttribute
 			Card.GetAttribute=function(c)
 				if c:IsMonster() then return 0x7f end
@@ -292,8 +292,8 @@ if not SealedDuel then
 		--anime counterparts select
 		anime=true
 		if anime then
-			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(4006,15))
-			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(4006,15))
+			Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(id,2))
+			Duel.Hint(HINT_OPSELECTED,1-tp,aux.Stringid(id,2))
 		end
 			
 		--anime counterparts
@@ -348,7 +348,7 @@ if not SealedDuel then
 					Debug.AddCard(code,p,p,LOCATION_DECK,1,POS_FACEDOWN_DEFENSE)
 				end
 				Debug.ReloadFieldEnd()
-				Duel.Hint(HINT_SELECTMSG,p,aux.Stringid(4002,7))
+				Duel.Hint(HINT_SELECTMSG,p,aux.Stringid(id,3))
 				local fg=Duel.GetFieldGroup(p,0xff,0)
 				local exclude=fg:Select(p,0,#fg-20,nil)
 				if exclude then
@@ -358,7 +358,7 @@ if not SealedDuel then
 				Duel.ShuffleExtra(p)
 				local dtpg=Duel.GetDecktopGroup(p,Duel.GetStartingHand(p))
 				Duel.ConfirmCards(p,dtpg)
-				if Duel.SelectYesNo(p,aux.Stringid(id,0)) then
+				if Duel.SelectYesNo(p,aux.Stringid(id,4)) then
 					Duel.MoveToDeckBottom(dtpg)
 				end
 				if counts[p]~=1 then

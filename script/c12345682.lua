@@ -43,7 +43,7 @@ end
 s.listed_series={0x48}
 s.xyz_number=4
 function s.desfilter(c)
-	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_WATER)
+	return c:IsFaceup()
 end
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.desfilter(chkc) end
@@ -51,7 +51,7 @@ function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
 	local g=Duel.SelectTarget(tp,s.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
-	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,g:GetFirst():GetControler(),0)
+	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,0)
 end
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
@@ -59,7 +59,7 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 		local atk=tc:GetAttack()
 		if Duel.Destroy(tc,REASON_EFFECT)>0 then
 			Duel.BreakEffect()
-			Duel.Damage(tc:GetControler(),atk,REASON_EFFECT)
+			Duel.Damage(1-tp,atk,REASON_EFFECT)
 		end
 	end
 end
@@ -84,13 +84,13 @@ function s.rescon(ect)
 end
 function s.sumtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=e:GetLabelObject()
-	local ct=#g
 	local sg=Duel.GetMatchingGroup(s.spfilter,tp,LOCATION_EXTRA+LOCATION_GRAVE,0,e:GetHandler(),e,tp)
-	if chk==0 then return ct>0 and (not Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) or ct<=1) 
+	if chk==0 then return #g>0 and (not Duel.IsPlayerAffectedByEffect(tp,CARD_BLUEEYES_SPIRIT) or #g<=1) 
 		and aux.SelectUnselectGroup(sg,e,tp,nil,nil,s.rescon(aux.CheckSummonGate(tp)),0) end
 	Duel.SetTargetCard(g)
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,ct,tp,0)
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,#g,tp,0)
 end
+
 function s.sumop(e,tp,eg,ep,ev,re,r,rp)
 	local mg=Duel.GetTargetCards(e)
 	local ct=#mg
@@ -98,12 +98,21 @@ function s.sumop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.spfilter),tp,LOCATION_EXTRA+LOCATION_GRAVE,0,e:GetHandler(),e,tp)
 	local sg=aux.SelectUnselectGroup(g,e,tp,ct,ct,s.rescon(aux.CheckSummonGate(tp)),1,tp,HINTMSG_SPSUMMON)
 	if #sg<=0 then return end
-	if Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP) > 0 then
-		for oc in aux.Next(mg) do
-			local tc=sg:FilterSelect(tp,Card.IsLocation,1,1,nil,LOCATION_MZONE):GetFirst()
-			if not tc then break end
-			Duel.Overlay(tc,oc)
-			sg:RemoveCard(tc)
-		end
+	
+	-- Special Summon with proper summon procedure
+	Duel.SpecialSummon(sg,SUMMON_TYPE_SPECIAL,tp,tp,false,false,POS_FACEUP)
+
+	-- Mark each summoned monster as properly summoned
+	local tc=sg:GetFirst()
+	while tc do
+		tc:CompleteProcedure()
+		tc=sg:GetNext()
+	end
+
+	for oc in aux.Next(mg) do
+		local tc=sg:FilterSelect(tp,Card.IsLocation,1,1,nil,LOCATION_MZONE):GetFirst()
+		if not tc then break end
+		Duel.Overlay(tc,oc)
+		sg:RemoveCard(tc)
 	end
 end
