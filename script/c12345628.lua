@@ -26,7 +26,7 @@ function s.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetTargetRange(LOCATION_MZONE,0)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)
-	e3:SetValue(500)
+	e3:SetValue(1000)
 	c:RegisterEffect(e3)
 	--inflict damage when opponent's card is destroyed
 	local e4=Effect.CreateEffect(c)
@@ -65,5 +65,5 @@ function s.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(Card.IsControler,1,nil,1-tp)
 end
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Damage(1-tp,500,REASON_EFFECT)
+	Duel.Damage(1-tp,1000,REASON_EFFECT)
 end

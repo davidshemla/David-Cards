@@ -150,17 +150,21 @@ function s.spfilter(c,e,tp)
     return c:IsSetCard(0xf7) and c:IsSummonableCard()
 end
 
+
 function s.sptarget(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil) end
+    local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
+    if chk==0 then return ft>0 and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil) end
     local g=Duel.GetMatchingGroup(s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,nil)
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,#g,tp,0)
+    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,math.min(ft,#g),tp,LOCATION_HAND+LOCATION_GRAVE)
 end
 
 function s.spoperation(e,tp,eg,ep,ev,re,r,rp)
+    local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
+    if ft<=0 then return end
     local g=Duel.GetMatchingGroup(s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,nil)
     if #g>0 then
-        -- Allow the player to select which cards to summon
-        local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,#g,nil)
+        -- Allow the player to select only as many cards as they have open zones
+        local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,ft,nil)
         if #sg>0 then
             Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
         end
